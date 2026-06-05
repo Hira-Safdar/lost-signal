@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "830978502424",
+    "project_id": "lost-signal-game",
+    "storage_bucket": "lost-signal-game.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:830978502424:android:7327b40fcc6524944d786d",
+        "android_client_info": {
+          "package_name": "com.example.game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9cvkXL9_ICLHD1g0h9vzgg4rRHPEvwMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
