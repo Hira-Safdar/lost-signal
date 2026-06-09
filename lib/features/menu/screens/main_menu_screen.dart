@@ -3,7 +3,10 @@ import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:lost_signal/features/chat/screens/chat_screen.dart';
+import 'package:lost_signal/features/about/screens/about_screen.dart';
+import 'package:lost_signal/features/settings/screens/settings_screen.dart';
+import 'package:lost_signal/features/story/screens/character_select_screen.dart';
+import 'package:lost_signal/shared/settings/app_settings.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
@@ -15,11 +18,26 @@ class MainMenuScreen extends StatefulWidget {
 class _MainMenuScreenState extends State<MainMenuScreen>
     with SingleTickerProviderStateMixin {
   static const List<_MenuEntry> _items = [
-    _MenuEntry(title: 'CONTINUE', subtitle: 'Resume your last session'),
-    _MenuEntry(title: 'CHAT', subtitle: 'Open the live channel'),
-    _MenuEntry(title: 'NEW GAME', subtitle: 'Start a new transmission'),
-    _MenuEntry(title: 'SETTINGS', subtitle: 'Audio, Graphics, Controls'),
-    _MenuEntry(title: 'ABOUT', subtitle: 'About Lost Signal'),
+    _MenuEntry(
+      title: 'CONTINUE',
+      subtitle: 'Resume your last session',
+      icon: Icons.play_arrow_rounded,
+    ),
+    _MenuEntry(
+      title: 'NEW GAME',
+      subtitle: 'Start a new transmission',
+      icon: Icons.videogame_asset_outlined,
+    ),
+    _MenuEntry(
+      title: 'SETTINGS',
+      subtitle: 'Audio, Graphics, Controls',
+      icon: Icons.settings_outlined,
+    ),
+    _MenuEntry(
+      title: 'ABOUT',
+      subtitle: 'About Lost Signal',
+      icon: Icons.info_outline_rounded,
+    ),
   ];
 
   static const List<String> _statuses = [
@@ -42,6 +60,8 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   int _statusIndex = 0;
   bool _glitchOffset = false;
   bool _statusOverride = false;
+  bool _isMuted = false;
+  AppSettingsController? _settings;
 
   @override
   void initState() {
@@ -54,11 +74,15 @@ class _MainMenuScreenState extends State<MainMenuScreen>
     _humPlayer = AudioPlayer();
     _cracklePlayer = AudioPlayer();
     _beepPlayer = AudioPlayer();
+
     _startAmbientAudio();
     _scheduleStatusShift();
     _scheduleCrackle();
 
     _glitchTimer = Timer.periodic(const Duration(seconds: 12), (_) {
+      if (!(_settings?.glitchEffectsEnabled ?? true)) {
+        return;
+      }
       if (!mounted) {
         return;
       }
@@ -76,10 +100,41 @@ class _MainMenuScreenState extends State<MainMenuScreen>
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextSettings = AppSettingsScope.of(context);
+    if (!identical(_settings, nextSettings)) {
+      _settings?.removeListener(_applySettings);
+      _settings = nextSettings;
+      _settings!.addListener(_applySettings);
+      _applySettings();
+    }
+  }
+
   Future<void> _startAmbientAudio() async {
     await _humPlayer.setReleaseMode(ReleaseMode.loop);
-    await _humPlayer.setVolume(0.12);
     await _humPlayer.play(AssetSource('sounds/ambient_hum.mp3'));
+    _applySettings();
+  }
+
+  Future<void> _applySettings() async {
+    final settings = _settings;
+    if (settings == null) {
+      return;
+    }
+    final ambientVolume = _isMuted ? 0.0 : (settings.ambientMix * 0.22).clamp(0.0, 1.0);
+    final effectsVolume = _isMuted ? 0.0 : (settings.effectsMix * 0.18).clamp(0.0, 1.0);
+    await _humPlayer.setVolume(ambientVolume);
+    await _cracklePlayer.setVolume(effectsVolume);
+    await _beepPlayer.setVolume(effectsVolume);
+  }
+
+  Future<void> _toggleMute() async {
+    setState(() {
+      _isMuted = !_isMuted;
+    });
+    await _applySettings();
   }
 
   void _scheduleCrackle() {
@@ -88,8 +143,9 @@ class _MainMenuScreenState extends State<MainMenuScreen>
       if (!mounted) {
         return;
       }
-      await _cracklePlayer.setVolume(0.16);
-      await _cracklePlayer.play(AssetSource('sounds/radio_static.mp3'));
+      if (_settings?.glitchEffectsEnabled ?? true) {
+        await _cracklePlayer.play(AssetSource('sounds/radio_static.mp3'));
+      }
       _scheduleCrackle();
     });
   }
@@ -100,7 +156,8 @@ class _MainMenuScreenState extends State<MainMenuScreen>
       if (!mounted) {
         return;
       }
-      final shouldOverride = _random.nextBool();
+      final glitchEnabled = _settings?.glitchEffectsEnabled ?? true;
+      final shouldOverride = glitchEnabled && _random.nextBool();
       setState(() {
         _statusOverride = shouldOverride;
         _statusIndex = shouldOverride ? 1 + _random.nextInt(2) : 0;
@@ -122,7 +179,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
 
   Future<void> _playMenuBeep() async {
     await _beepPlayer.stop();
-    await _beepPlayer.setVolume(0.12);
+    await _applySettings();
     await _beepPlayer.play(AssetSource('sounds/menu_change.mp3'));
   }
 
@@ -138,10 +195,23 @@ class _MainMenuScreenState extends State<MainMenuScreen>
 
   void _handleMenuTap(int index) {
     _selectIndex(index);
-    if (_items[index].title == 'CHAT') {
+    if (_items[index].title == 'NEW GAME' ||
+        _items[index].title == 'CONTINUE') {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => const ChatScreen(),
+          builder: (_) => const CharacterSelectScreen(),
+        ),
+      );
+    } else if (_items[index].title == 'SETTINGS') {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const SettingsScreen(),
+        ),
+      );
+    } else if (_items[index].title == 'ABOUT') {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const AboutScreen(),
         ),
       );
     }
@@ -152,6 +222,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
     _glitchTimer?.cancel();
     _statusTimer?.cancel();
     _crackleTimer?.cancel();
+    _settings?.removeListener(_applySettings);
     _backgroundController.dispose();
     _humPlayer.dispose();
     _cracklePlayer.dispose();
@@ -161,6 +232,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
 
   @override
   Widget build(BuildContext context) {
+    final settings = AppSettingsScope.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 700;
@@ -171,14 +243,14 @@ class _MainMenuScreenState extends State<MainMenuScreen>
             fit: StackFit.expand,
             children: [
               _buildBackground(),
-              const _MenuScanlines(),
+              if (settings.scanlinesEnabled) const _MenuScanlines(),
               SafeArea(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     isCompact ? 14 : 24,
-                    isCompact ? 14 : 20,
+                    isCompact ? 12 : 20,
                     isCompact ? 14 : 24,
-                    isCompact ? 14 : 20,
+                    isCompact ? 8 : 20,
                   ),
                   child: Center(
                     child: ConstrainedBox(
@@ -187,31 +259,42 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _buildTopHud(isCompact),
-                          SizedBox(height: isCompact ? 14 : 26),
+                          SizedBox(height: isCompact ? 20 : 32),
                           _buildLogo(isCompact),
-                          SizedBox(height: isCompact ? 8 : 14),
+                          SizedBox(height: isCompact ? 4 : 10),
                           _buildSignalPanel(isCompact),
-                          SizedBox(height: isCompact ? 12 : 22),
+                          SizedBox(height: isCompact ? 8 : 18),
                           Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(_items.length, (index) {
-                                final item = _items[index];
-                                return Padding(
-                                  padding: EdgeInsets.only(bottom: index == _items.length - 1 ? 0 : (isCompact ? 8 : 12)),
-                                  child: _MenuCard(
-                                    entry: item,
-                                    selected: index == _selectedIndex,
-                                    glitchOffset: _glitchOffset,
-                                    compact: isCompact,
-                                    onTap: () => _handleMenuTap(index),
-                                    onHover: () => _selectIndex(index),
-                                  ),
-                                );
-                              }),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: isCompact ? 320 : 520,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: List.generate(_items.length, (index) {
+                                    final item = _items[index];
+                                    return Padding(
+                                      padding: EdgeInsets.only(
+                                        bottom: index == _items.length - 1
+                                            ? 0
+                                            : (isCompact ? 6 : 12),
+                                      ),
+                                      child: _MenuCard(
+                                        entry: item,
+                                        selected: index == _selectedIndex,
+                                        glitchOffset: _glitchOffset,
+                                        compact: isCompact,
+                                        onTap: () => _handleMenuTap(index),
+                                        onHover: () => _selectIndex(index),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ),
                             ),
                           ),
-                          SizedBox(height: isCompact ? 12 : 20),
+                          SizedBox(height: isCompact ? 6 : 16),
                           _buildBottomHud(isCompact),
                         ],
                       ),
@@ -246,12 +329,12 @@ class _MainMenuScreenState extends State<MainMenuScreen>
             fit: StackFit.expand,
             children: [
               Image.asset('assets/images/corridor.png', fit: BoxFit.cover),
-              Container(color: Colors.black.withValues(alpha: 0.48)),
+              Container(color: Colors.black.withValues(alpha: 0.10)),
               Opacity(
-                opacity: 0.22,
+                opacity: 0.52,
                 child: ColorFiltered(
                   colorFilter: ColorFilter.mode(
-                    const Color(0xFF7CFF41).withValues(alpha: 0.24),
+                    const Color(0xFF7CFF41).withValues(alpha: 0.22),
                     BlendMode.screen,
                   ),
                   child: Image.asset('assets/images/corridor.png', fit: BoxFit.cover),
@@ -266,9 +349,9 @@ class _MainMenuScreenState extends State<MainMenuScreen>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.14),
+                Colors.black.withValues(alpha: 0.02),
                 Colors.transparent,
-                Colors.black.withValues(alpha: 0.22),
+                Colors.black.withValues(alpha: 0.06),
               ],
             ),
           ),
@@ -283,32 +366,41 @@ class _MainMenuScreenState extends State<MainMenuScreen>
       children: [
         Expanded(
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: isCompact ? 12 : 16, vertical: isCompact ? 12 : 14),
+            height: isCompact ? 48 : 62,
+            padding: EdgeInsets.symmetric(
+              horizontal: isCompact ? 10 : 16,
+              vertical: isCompact ? 6 : 10,
+            ),
             decoration: _hudDecoration(),
             child: Row(
               children: [
                 Icon(
                   Icons.settings_input_antenna,
                   color: const Color(0xFF7CFF41),
-                  size: isCompact ? 24 : 30,
+                  size: isCompact ? 18 : 26,
                 ),
-                SizedBox(width: isCompact ? 10 : 14),
+                SizedBox(width: isCompact ? 8 : 12),
                 Expanded(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _hudText('NETWORK: UNKNOWN', compact: isCompact),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       RichText(
                         text: TextSpan(
                           children: [
-                            TextSpan(text: 'CONNECTION: ', style: _hudStyle(compact: isCompact)),
-                            TextSpan(text: 'SECURE', style: _hudStyle(compact: isCompact, green: true)),
+                            TextSpan(
+                              text: 'CONNECTION: ',
+                              style: _hudStyle(compact: isCompact),
+                            ),
+                            TextSpan(
+                              text: 'SECURE',
+                              style: _hudStyle(compact: isCompact, green: true),
+                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      _hudText('USER: UNKNOWN', compact: isCompact),
                     ],
                   ),
                 ),
@@ -317,101 +409,82 @@ class _MainMenuScreenState extends State<MainMenuScreen>
           ),
         ),
         SizedBox(width: isCompact ? 10 : 14),
-        _HudIconButton(compact: isCompact),
+        _HudIconButton(
+          compact: isCompact,
+          isMuted: _isMuted,
+          onTap: _toggleMute,
+        ),
       ],
     );
   }
 
   Widget _buildLogo(bool isCompact) {
-    final width = isCompact ? 180.0 : 320.0;
+    final width = isCompact ? 385.0 : 560.0;
+    final glitchEnabled = _settings?.glitchEffectsEnabled ?? true;
     return Center(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (_glitchOffset)
+      child: Transform.translate(
+        offset: Offset(0, isCompact ? 14 : 20),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (glitchEnabled && _glitchOffset)
+              Transform.translate(
+                offset: const Offset(-5, 0),
+                child: Opacity(
+                  opacity: 0.2,
+                  child: Image.asset(
+                    'assets/images/lost_signal_logo.png',
+                    width: width,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
             Transform.translate(
-              offset: const Offset(-5, 0),
-              child: Opacity(
-                opacity: 0.2,
-                child: Image.asset('assets/images/lost_signal_logo.png', width: width, fit: BoxFit.contain),
+              offset: glitchEnabled && _glitchOffset ? const Offset(5, 0) : Offset.zero,
+              child: Image.asset(
+                'assets/images/lost_signal_logo.png',
+                width: width,
+                fit: BoxFit.contain,
               ),
             ),
-          Transform.translate(
-            offset: _glitchOffset ? const Offset(5, 0) : Offset.zero,
-            child: Image.asset('assets/images/lost_signal_logo.png', width: width, fit: BoxFit.contain),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSignalPanel(bool isCompact) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isCompact ? 12 : 18, vertical: isCompact ? 12 : 14),
-      decoration: _hudDecoration(),
-      child: isCompact
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 260),
-                  child: Text(
-                    '${_statuses[_statusIndex]}  •  87%',
-                    key: ValueKey(_statuses[_statusIndex]),
-                    style: TextStyle(
-                      color: _statusOverride ? const Color(0xFFB8FFD8) : Colors.white,
-                      fontSize: 13,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Align(alignment: Alignment.centerRight, child: _PulseLine(compact: true)),
-              ],
-            )
-          : Row(
-              children: [
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 260),
-                    child: Text(
-                      '${_statuses[_statusIndex]}  •  87%',
-                      key: ValueKey(_statuses[_statusIndex]),
-                      style: TextStyle(
-                        color: _statusOverride ? const Color(0xFFB8FFD8) : Colors.white,
-                        fontSize: 16,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 18),
-                const _PulseLine(),
-              ],
-            ),
+    return Center(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        child: Text(
+          _statuses[_statusIndex],
+          key: ValueKey(_statuses[_statusIndex]),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: _statusOverride
+                ? const Color(0xFFB8FFD8)
+                : const Color(0xFF7CFF41),
+            fontSize: isCompact ? 13 : 18,
+            letterSpacing: isCompact ? 1.5 : 2.2,
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildBottomHud(bool isCompact) {
     return isCompact
-        ? Column(
-            children: const [
-              _BottomInfoCard(compact: true),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(child: _WaveCard(compact: true)),
-                  SizedBox(width: 8),
-                  Expanded(child: _SignalStrengthCard(compact: true)),
-                ],
-              ),
+        ? const Row(
+            children: [
+              Expanded(child: _BottomInfoCard(compact: true)),
+              SizedBox(width: 8),
+              Expanded(child: _SignalStrengthCard(compact: true)),
             ],
           )
         : Row(
             children: const [
               Expanded(flex: 3, child: _BottomInfoCard()),
-              SizedBox(width: 12),
-              Expanded(flex: 2, child: _WaveCard()),
               SizedBox(width: 12),
               Expanded(flex: 4, child: _SignalStrengthCard()),
             ],
@@ -425,17 +498,22 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   TextStyle _hudStyle({required bool compact, bool green = false}) {
     return TextStyle(
       color: green ? const Color(0xFF7CFF41) : Colors.white,
-      fontSize: compact ? 11 : 13,
-      letterSpacing: compact ? 1.2 : 1.6,
+      fontSize: compact ? 10 : 13,
+      letterSpacing: compact ? 1.0 : 1.6,
     );
   }
 }
 
 class _MenuEntry {
-  const _MenuEntry({required this.title, required this.subtitle});
+  const _MenuEntry({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
 
   final String title;
   final String subtitle;
+  final IconData icon;
 }
 
 class _MenuCard extends StatelessWidget {
@@ -457,33 +535,38 @@ class _MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final glitchEnabled = AppSettingsScope.of(context).glitchEffectsEnabled;
     return MouseRegion(
       onEnter: (_) => onHover(),
       child: GestureDetector(
         onTap: onTap,
-      child: AnimatedContainer(
+        child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           width: double.infinity,
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 12 : 20,
-            vertical: compact ? 10 : 18,
+            horizontal: compact ? 14 : 20,
+            vertical: compact ? 9 : 18,
           ),
-          decoration: _hudDecoration(selected: selected, glow: selected ? 0.22 : 0.08),
+          decoration: _hudDecoration(
+            selected: selected,
+            glow: selected ? 0.22 : 0.08,
+            radius: compact ? 14 : 18,
+          ),
           child: Row(
             children: [
               Icon(
-                Icons.play_arrow_rounded,
-                size: compact ? 26 : 34,
+                entry.icon,
+                size: compact ? 22 : 34,
                 color: const Color(0xFFEAFAEA),
               ),
-              SizedBox(width: compact ? 10 : 14),
+              SizedBox(width: compact ? 8 : 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Stack(
                       children: [
-                        if (selected && glitchOffset)
+                        if (selected && glitchOffset && glitchEnabled)
                           Transform.translate(
                             offset: const Offset(-2, 0),
                             child: Text(
@@ -491,7 +574,7 @@ class _MenuCard extends StatelessWidget {
                               style: TextStyle(
                                 color: const Color(0xFF7CFF41).withValues(alpha: 0.25),
                                 fontSize: compact ? 16 : 24,
-                                letterSpacing: compact ? 1.6 : 2.2,
+                                letterSpacing: compact ? 1.3 : 2.2,
                               ),
                             ),
                           ),
@@ -500,7 +583,7 @@ class _MenuCard extends StatelessWidget {
                           style: TextStyle(
                             color: const Color(0xFFEAFAEA),
                             fontSize: compact ? 16 : 24,
-                            letterSpacing: compact ? 1.4 : 2.2,
+                            letterSpacing: compact ? 1.3 : 2.2,
                           ),
                         ),
                       ],
@@ -521,10 +604,10 @@ class _MenuCard extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: compact ? 8 : 12),
+              SizedBox(width: compact ? 6 : 12),
               Icon(
-                Icons.play_arrow_rounded,
-                size: compact ? 26 : 34,
+                entry.icon,
+                size: compact ? 22 : 34,
                 color: const Color(0xFF7CFF41).withValues(alpha: selected ? 1 : 0.78),
               ),
             ],
@@ -536,65 +619,33 @@ class _MenuCard extends StatelessWidget {
 }
 
 class _HudIconButton extends StatelessWidget {
-  const _HudIconButton({required this.compact});
+  const _HudIconButton({
+    required this.compact,
+    required this.isMuted,
+    required this.onTap,
+  });
 
   final bool compact;
+  final bool isMuted;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final size = compact ? 48.0 : 62.0;
-    return Container(
-      width: size,
-      height: size,
-      decoration: _hudDecoration(),
-      child: Icon(
-        Icons.volume_up_outlined,
-        color: const Color(0xFF7CFF41),
-        size: compact ? 22 : 30,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: _hudDecoration(selected: !isMuted, glow: !isMuted ? 0.12 : 0.05),
+        child: Icon(
+          isMuted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
+          color: const Color(0xFF7CFF41),
+          size: compact ? 22 : 30,
+        ),
       ),
     );
   }
-}
-
-class _PulseLine extends StatelessWidget {
-  const _PulseLine({this.compact = false});
-
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: compact ? 84 : 110,
-      height: compact ? 18 : 22,
-      child: CustomPaint(painter: _PulseLinePainter()),
-    );
-  }
-}
-
-class _PulseLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF7CFF41)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final path = Path()
-      ..moveTo(0, size.height * 0.55)
-      ..lineTo(size.width * 0.18, size.height * 0.55)
-      ..lineTo(size.width * 0.26, size.height * 0.48)
-      ..lineTo(size.width * 0.34, size.height * 0.56)
-      ..lineTo(size.width * 0.44, size.height * 0.54)
-      ..lineTo(size.width * 0.55, size.height * 0.2)
-      ..lineTo(size.width * 0.63, size.height * 0.78)
-      ..lineTo(size.width * 0.73, size.height * 0.52)
-      ..lineTo(size.width, size.height * 0.55);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _BottomInfoCard extends StatelessWidget {
@@ -605,9 +656,9 @@ class _BottomInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: compact ? 118 : 132,
-      padding: EdgeInsets.all(compact ? 12 : 16),
-      decoration: _hudDecoration(),
+      height: compact ? 76 : 112,
+      padding: EdgeInsets.all(compact ? 9 : 14),
+      decoration: _hudDecoration(radius: compact ? 12 : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -615,63 +666,29 @@ class _BottomInfoCard extends StatelessWidget {
             'LAST TRANSMISSION:',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.78),
-              fontSize: compact ? 10 : 12,
-              letterSpacing: compact ? 1.2 : 1.6,
+              fontSize: compact ? 9 : 12,
+              letterSpacing: compact ? 1.0 : 1.6,
             ),
           ),
-          const Spacer(),
+          SizedBox(height: compact ? 4 : 10),
           Text(
             '2:13 AM',
             style: TextStyle(
               color: const Color(0xFFEAFAEA),
-              fontSize: compact ? 18 : 28,
-              letterSpacing: compact ? 2.0 : 2.6,
+              fontSize: compact ? 16 : 28,
+              letterSpacing: compact ? 1.2 : 2.6,
             ),
           ),
-          SizedBox(height: compact ? 6 : 8),
+          SizedBox(height: compact ? 2 : 8),
           Text(
             'DATE: 23/05/2025',
             style: TextStyle(
               color: const Color(0xFF7CFF41),
-              fontSize: compact ? 10 : 12,
-              letterSpacing: 1.4,
+              fontSize: compact ? 7 : 12,
+              letterSpacing: compact ? 0.8 : 1.4,
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _WaveCard extends StatelessWidget {
-  const _WaveCard({this.compact = false});
-
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: compact ? 118 : 132,
-      decoration: _hudDecoration(),
-      child: Center(
-        child: SizedBox(
-          width: compact ? 76 : 120,
-          height: compact ? 36 : 56,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: List.generate(18, (index) {
-              final heights = compact
-                  ? [4.0, 8.0, 10.0, 14.0, 16.0, 12.0]
-                  : [8.0, 12.0, 18.0, 24.0, 30.0, 20.0];
-              return Container(
-                width: compact ? 2.5 : 3,
-                height: heights[index % heights.length],
-                color: const Color(0xFF7CFF41),
-              );
-            }),
-          ),
-        ),
       ),
     );
   }
@@ -685,9 +702,9 @@ class _SignalStrengthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: compact ? 118 : 132,
-      padding: EdgeInsets.all(compact ? 12 : 16),
-      decoration: _hudDecoration(),
+      height: compact ? 76 : 112,
+      padding: EdgeInsets.all(compact ? 9 : 14),
+      decoration: _hudDecoration(radius: compact ? 12 : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -695,21 +712,21 @@ class _SignalStrengthCard extends StatelessWidget {
             'SIGNAL STRENGTH:',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.78),
-              fontSize: compact ? 10 : 12,
-              letterSpacing: compact ? 1.2 : 1.6,
+              fontSize: compact ? 9 : 12,
+              letterSpacing: compact ? 1.0 : 1.6,
             ),
           ),
-          SizedBox(height: compact ? 10 : 14),
+          SizedBox(height: compact ? 6 : 12),
           Wrap(
-            spacing: 4,
-            runSpacing: 8,
+            spacing: compact ? 3 : 4,
+            runSpacing: compact ? 4 : 6,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               ...List.generate(12, (index) {
                 final active = index < 10;
                 return Container(
-                  width: compact ? 10 : 14,
-                  height: compact ? 14 : 22,
+                  width: compact ? 7 : 14,
+                  height: compact ? 10 : 22,
                   decoration: BoxDecoration(
                     color: active ? const Color(0xFF7CFF41) : Colors.transparent,
                     border: Border.all(
@@ -724,20 +741,20 @@ class _SignalStrengthCard extends StatelessWidget {
                   '87%',
                   style: TextStyle(
                     color: const Color(0xFF7CFF41),
-                    fontSize: compact ? 16 : 22,
-                    letterSpacing: 2.4,
+                    fontSize: compact ? 12 : 22,
+                    letterSpacing: compact ? 1.0 : 2.4,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: compact ? 6 : 12),
+          SizedBox(height: compact ? 2 : 10),
           Text(
             'STATUS: ONLINE \u25cf',
             style: TextStyle(
               color: const Color(0xFF7CFF41),
-              fontSize: compact ? 9 : 12,
-              letterSpacing: compact ? 1.0 : 1.4,
+              fontSize: compact ? 7 : 12,
+              letterSpacing: compact ? 0.6 : 1.4,
             ),
           ),
         ],
@@ -787,8 +804,13 @@ class _MenuScanlinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-BoxDecoration _hudDecoration({bool selected = false, double glow = 0.08}) {
+BoxDecoration _hudDecoration({
+  bool selected = false,
+  double glow = 0.08,
+  double radius = 0,
+}) {
   return BoxDecoration(
+    borderRadius: BorderRadius.circular(radius),
     border: Border.all(
       color: const Color(0xFF7CFF41).withValues(alpha: selected ? 0.64 : 0.34),
     ),

@@ -61,9 +61,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/images/lost_signal_logo.png
-    - assets/images/corridor.png
-    - assets/images/shadow.webp
+    - assets/images/
     - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:

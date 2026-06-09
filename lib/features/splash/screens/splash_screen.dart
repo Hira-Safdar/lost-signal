@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:lost_signal/features/menu/screens/main_menu_screen.dart';
+import 'package:lost_signal/shared/settings/app_settings.dart';
 
 import '../../../shared/theme/app_theme.dart';
 
@@ -29,6 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
   late final AudioPlayer _staticPlayer;
   late final AudioPlayer _sfxPlayer;
   late final AudioPlayer _dotPlayer;
+  late final AudioPlayer _typePlayer;
   late final Stopwatch _stopwatch;
 
   Timer? _timer;
@@ -39,6 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
   bool _signalFoundPlayed = false;
   bool _navigated = false;
   bool _dotClickPlayed = false;
+  AppSettingsController? _settings;
 
   Duration get _dotStart => _blackDuration;
   Duration get _typingStart => _dotStart + _dotDuration;
@@ -54,6 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _staticPlayer = AudioPlayer();
     _sfxPlayer = AudioPlayer();
     _dotPlayer = AudioPlayer();
+    _typePlayer = AudioPlayer();
     _startAudio();
 
     _stopwatch = Stopwatch()..start();
@@ -71,20 +75,43 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextSettings = AppSettingsScope.of(context);
+    if (!identical(_settings, nextSettings)) {
+      _settings?.removeListener(_applySettings);
+      _settings = nextSettings;
+      _settings!.addListener(_applySettings);
+      _applySettings();
+    }
+  }
+
   Future<void> _startAudio() async {
     await _humPlayer.setReleaseMode(ReleaseMode.loop);
     await _staticPlayer.setReleaseMode(ReleaseMode.loop);
-    await _humPlayer.setVolume(0.15);
-    await _staticPlayer.setVolume(0.1);
+    await _typePlayer.setPlayerMode(PlayerMode.lowLatency);
+    await _dotPlayer.setPlayerMode(PlayerMode.lowLatency);
+    await _sfxPlayer.setPlayerMode(PlayerMode.lowLatency);
     await _humPlayer.play(AssetSource('sounds/ambient_hum.mp3'));
     await _staticPlayer.play(AssetSource('sounds/radio_static.mp3'));
+    _applySettings();
+  }
+
+  Future<void> _applySettings() async {
+    final settings = _settings;
+    if (settings == null) {
+      return;
+    }
+    await _humPlayer.setVolume((settings.ambientMix * 0.42).clamp(0.0, 1.0));
+    await _staticPlayer.setVolume((settings.effectsMix * 0.20).clamp(0.0, 1.0));
   }
 
   void _processTimeline(Duration elapsed) {
     final typedLength = _typedSearchText.length;
     if (typedLength > _lastTypedLength) {
       _lastTypedLength = typedLength;
-      unawaited(_playTypeTick(volume: 0.08));
+      unawaited(_playTypeTick(volume: 0.18));
     }
 
     if (!_dotClickPlayed && elapsed >= _dotStart) {
@@ -95,7 +122,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final progressIndex = _progressIndex;
     if (progressIndex > _lastProgressIndex) {
       _lastProgressIndex = progressIndex;
-      unawaited(_playTypeTick(volume: 0.12));
+      unawaited(_playTypeTick(volume: 0.20));
     }
 
     if (!_glitchPlayed && elapsed >= _glitchStart) {
@@ -115,20 +142,24 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _playTypeTick({double volume = 0.1}) async {
-    await _sfxPlayer.stop();
-    await _sfxPlayer.setVolume(volume);
-    await _sfxPlayer.play(AssetSource('sounds/type_tick.mp3'));
+    final settings = _settings;
+    await _typePlayer.stop();
+    await _typePlayer.setVolume(((settings?.effectsMix ?? 1) * volume).clamp(0.0, 1.0));
+    await _typePlayer.play(AssetSource('sounds/type_tick.mp3'));
   }
 
   Future<void> _playGlitch() async {
+    if (!(_settings?.glitchEffectsEnabled ?? true)) {
+      return;
+    }
     await _sfxPlayer.stop();
-    await _sfxPlayer.setVolume(0.22);
+    await _sfxPlayer.setVolume(((_settings?.effectsMix ?? 1) * 0.22).clamp(0.0, 1.0));
     await _sfxPlayer.play(AssetSource('sounds/glitch_short.mp3'));
   }
 
   Future<void> _playDotClick() async {
     await _dotPlayer.stop();
-    await _dotPlayer.setVolume(0.16);
+    await _dotPlayer.setVolume(((_settings?.effectsMix ?? 1) * 0.35).clamp(0.0, 1.0));
     await _dotPlayer.play(AssetSource('sounds/menu_change.mp3'));
   }
 
@@ -153,15 +184,18 @@ class _SplashScreenState extends State<SplashScreen> {
   void dispose() {
     _timer?.cancel();
     _stopwatch.stop();
+    _settings?.removeListener(_applySettings);
     _humPlayer.dispose();
     _staticPlayer.dispose();
     _sfxPlayer.dispose();
     _dotPlayer.dispose();
+    _typePlayer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final settings = AppSettingsScope.of(context);
     final stage = _stage;
     final showBackground = stage != _SplashStage.black && stage != _SplashStage.dot;
 
@@ -171,11 +205,12 @@ class _SplashScreenState extends State<SplashScreen> {
         fit: StackFit.expand,
         children: [
           if (showBackground) const _CorridorBackdrop(opacity: 0.05),
-          const _ScanlineOverlay(),
+          if (settings.scanlinesEnabled) const _ScanlineOverlay(),
           if (stage == _SplashStage.dot) _buildDotStage(),
           if (stage == _SplashStage.typing) _buildTypingStage(),
           if (stage == _SplashStage.scan) _buildScanStage(),
-          if (stage == _SplashStage.glitch) _buildGlitchStage(),
+          if (stage == _SplashStage.glitch)
+            settings.glitchEffectsEnabled ? _buildGlitchStage() : _buildSignalFoundStage(),
           if (stage == _SplashStage.signalFound) _buildSignalFoundStage(),
         ],
       ),
@@ -275,7 +310,7 @@ class _SplashScreenState extends State<SplashScreen> {
       fit: StackFit.expand,
       children: [
         const _CorridorBackdrop(opacity: 0.08, heavy: true),
-        const _GlitchLinesOverlay(),
+        if (_settings?.glitchEffectsEnabled ?? true) const _GlitchLinesOverlay(),
         Center(
           child: Text(
             'HELP ME',
