@@ -34,6 +34,7 @@ class _LocationScreenState extends State<LocationScreen> {
   static const Map<String, String> _clueLabels = {
     'badge': 'Nathan Kim\'s student ID left beside the Engineering Block desk',
     'notice': 'Missing student report posted outside Room 207',
+    'archive_route': 'Admin archive route confirmation stamped after Nathan disappeared',
     'logbook': 'Nathan\'s broken phone containing the last unsent draft',
     'photo': 'Library evidence photo showing Nathan near the admin corridor',
     'security_card': 'Dormitory security card linked to after-hours access',
@@ -43,6 +44,7 @@ class _LocationScreenState extends State<LocationScreen> {
   static const Map<String, String> _clueDetails = {
     'badge': 'The ID confirms the sender is Nathan Kim, a third-year student. It was dropped in Engineering Block, proving he reached Room 207.',
     'notice': 'The report says Nathan was declared missing the same night. Last seen entering Engineering Block after 2:13 AM.',
+    'archive_route': 'A stamped archive note confirms the report trail continues from Admin Office to the library archive passage.',
     'logbook': 'The broken phone still holds a draft: "If I lose signal, the admin archive key opens the basement service door."',
     'photo': 'A blurred photo from the library archive shows Nathan arguing with someone from the Admin Office before heading toward Engineering.',
     'security_card': 'The dorm security card logs a late-night exit from Nathan\'s floor and a second unauthorized swipe near a restricted campus door.',
@@ -52,6 +54,7 @@ class _LocationScreenState extends State<LocationScreen> {
   static const Map<String, String> _clueImages = {
     'badge': 'assets/images/student_id.png',
     'notice': 'assets/images/missing_report.png',
+    'archive_route': 'assets/images/horror_asset.png',
     'logbook': 'assets/images/broken_phone.png',
     'photo': 'assets/images/horror_asset.png',
     'security_card': 'assets/images/security_card.png',
@@ -107,6 +110,17 @@ class _LocationScreenState extends State<LocationScreen> {
         size: Size(130, 74),
         direction: Axis.horizontal,
         clueId: 'security_card',
+      ),
+    ],
+    'admin': [
+      _SceneItem(
+        id: 'report_tray',
+        label: 'Pull archive tray',
+        alignment: Alignment(0.62, 0.52),
+        revealAlignment: Alignment(0.12, -0.10),
+        size: Size(124, 66),
+        direction: Axis.horizontal,
+        clueId: 'archive_route',
       ),
     ],
     'basement': [
@@ -214,7 +228,7 @@ class _LocationScreenState extends State<LocationScreen> {
         fit: StackFit.expand,
         children: [
           Image.asset(widget.location.imagePath, fit: BoxFit.cover),
-          Container(color: Colors.black.withValues(alpha: 0.24)),
+          Container(color: Colors.black.withValues(alpha: 0.10)),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(14),
@@ -281,7 +295,7 @@ class _LocationScreenState extends State<LocationScreen> {
                           child: Stack(
                             children: [
                               Positioned.fill(
-                                child: Container(decoration: _panelDecoration(glow: 0.04)),
+                                child: Container(decoration: _sceneDecoration()),
                               ),
                               ...items.map((item) {
                                 final revealed = _isItemMoved(item);
@@ -506,5 +520,27 @@ BoxDecoration _panelDecoration({double glow = 0.08}) {
       ),
     ],
     color: const Color(0xFF020502).withValues(alpha: 0.84),
+  );
+}
+
+BoxDecoration _sceneDecoration() {
+  return BoxDecoration(
+    border: Border.all(
+      color: const Color(0xFF7CFF41).withValues(alpha: 0.34),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: const Color(0xFF7CFF41).withValues(alpha: 0.05),
+        blurRadius: 14,
+      ),
+    ],
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Colors.black.withValues(alpha: 0.10),
+        Colors.black.withValues(alpha: 0.18),
+      ],
+    ),
   );
 }

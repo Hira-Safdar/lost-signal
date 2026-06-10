@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:lost_signal/features/story/screens/case_file_screen.dart';
+import 'package:lost_signal/shared/game/game_controller.dart';
 import 'package:lost_signal/shared/settings/app_settings.dart';
 
 import '../models/player_profile.dart';
@@ -60,7 +62,7 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
       id: 'admin',
       title: 'ADMIN OFFICE',
       subtitle: 'Official records behind Nathan\'s disappearance.',
-      clueIds: [],
+      clueIds: ['archive_route'],
       imagePath: 'assets/images/admin.png',
       icon: Icons.domain_outlined,
       markerAlignment: Alignment(0.10, -0.72),
@@ -79,12 +81,22 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
   ];
 
   final Set<String> _collectedClues = <String>{};
+  final Set<String> _completedLocations = <String>{};
+  final Set<String> _unlockedLocations = <String>{};
   late final AudioPlayer _humPlayer;
   late final AudioPlayer _sfxPlayer;
   AppSettingsController? _settings;
+  GameController? _game;
 
   int get _clueCount => _collectedClues.length;
-  bool get _allCluesFound => _clueCount >= 5;
+  bool get _chapterReadyForEnding =>
+      _completedLocations.containsAll(const <String>[
+        'engineering',
+        'admin',
+        'library',
+        'dormitory',
+        'basement',
+      ]);
 
   @override
   void initState() {
@@ -104,6 +116,25 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
       _settings!.addListener(_applySettings);
       _applySettings();
     }
+    final nextGame = GameScope.of(context);
+    if (!identical(_game, nextGame)) {
+      _game = nextGame;
+      _hydrateFromSave(nextGame);
+    }
+  }
+
+  void _hydrateFromSave(GameController game) {
+    _collectedClues
+      ..clear()
+      ..addAll(game.save.collectedClueIds);
+    _completedLocations
+      ..clear()
+      ..addAll(game.save.completedLocationIds);
+    _unlockedLocations
+      ..clear()
+      ..addAll(game.save.unlockedLocationIds.isEmpty
+          ? const <String>['engineering']
+          : game.save.unlockedLocationIds);
   }
 
   Future<void> _startAmbient() async {
@@ -136,6 +167,9 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
   }
 
   Future<void> _openLocation(StoryLocation location) async {
+    if (!_unlockedLocations.contains(location.id)) {
+      return;
+    }
     unawaited(_playMapTap());
     final result = await Navigator.of(context).push<Set<String>>(
       MaterialPageRoute<Set<String>>(
@@ -148,15 +182,42 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
     );
 
     if (result != null) {
+      final progress = _deriveProgress(result);
       setState(() {
         _collectedClues
           ..clear()
           ..addAll(result);
+        _completedLocations
+          ..clear()
+          ..addAll(progress.completedLocations);
+        _unlockedLocations
+          ..clear()
+          ..addAll(progress.unlockedLocations);
       });
+      await _game?.updateLocationProgress(
+        locationId: location.id,
+        collectedClues: result.toList(growable: false),
+        completedLocationIds: progress.completedLocations.toList(growable: false),
+        unlockedLocationIds: progress.unlockedLocations.toList(growable: false),
+        objectiveId: progress.objectiveId,
+        storyPhase: progress.storyPhase,
+      );
     }
   }
 
-  void _openEnding() {
+  Future<void> _openEnding() async {
+    final endingId = (widget.signalStrength >= 55 &&
+            widget.trustScore >= 55 &&
+            _chapterReadyForEnding)
+        ? 'signal_held'
+        : 'too_late';
+    await _game?.completeChapter(
+      endingId: endingId,
+      storyPhase: 'chapter_complete',
+    );
+    if (!mounted) {
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => EndingScreen(
@@ -171,6 +232,7 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final game = GameScope.of(context);
     final effectiveSignal =
         (widget.signalStrength - (5 - _clueCount) * 4).clamp(24, 99);
 
@@ -256,6 +318,8 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
                             child: _MapMarker(
                               location: location,
                               found: found,
+                              unlocked: _unlockedLocations.contains(location.id),
+                              completed: _completedLocations.contains(location.id),
                               onTap: () => _openLocation(location),
                             ),
                           );
@@ -267,14 +331,14 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
                           child: Row(
                             children: [
                               Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: _panelDecoration(),
                                       child: Text(
-                                        '${widget.gender.subject} is rebuilding Nathan Kim\'s route. Evidence found: $_clueCount / 5',
+                                        game.nextObjectiveLabel(),
                                         style: const TextStyle(
                                           color: Color(0xFFBFFF9A),
                                           fontSize: 12,
@@ -289,9 +353,35 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
                               ),
                               const SizedBox(width: 10),
                               GestureDetector(
-                                onTap: _allCluesFound ? _openEnding : null,
+                                onTap: () async {
+                                  await game.openCaseFile();
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => const CaseFileScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
+                                  ),
+                                  decoration: _panelDecoration(glow: 0.10),
+                                  child: const Icon(
+                                    Icons.folder_open_rounded,
+                                    color: Color(0xFF7CFF41),
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: _chapterReadyForEnding ? _openEnding : null,
                                 child: Opacity(
-                                  opacity: _allCluesFound ? 1 : 0.45,
+                                  opacity: _chapterReadyForEnding ? 1 : 0.45,
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 14,
@@ -320,6 +410,80 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
       ),
     );
   }
+
+  _MapProgress _deriveProgress(Set<String> clues) {
+    final completed = <String>{};
+    for (final location in _locations) {
+      if (location.clueIds.isNotEmpty &&
+          location.clueIds.every(clues.contains)) {
+        completed.add(location.id);
+      }
+    }
+
+    final unlocked = <String>{'engineering'};
+    if (completed.contains('engineering')) {
+      unlocked.add('admin');
+    }
+    if (completed.contains('admin')) {
+      unlocked.addAll(const <String>['library', 'dormitory']);
+    }
+    if (completed.contains('library') && completed.contains('dormitory')) {
+      unlocked.add('basement');
+    }
+
+    if (!completed.contains('engineering')) {
+      return _MapProgress(
+        completedLocations: completed,
+        unlockedLocations: unlocked,
+        objectiveId: 'recover_engineering',
+        storyPhase: 'engineering_phase',
+      );
+    }
+    if (!completed.contains('admin')) {
+      return _MapProgress(
+        completedLocations: completed,
+        unlockedLocations: unlocked,
+        objectiveId: 'verify_admin',
+        storyPhase: 'admin_phase',
+      );
+    }
+    if (!completed.contains('library')) {
+      return _MapProgress(
+        completedLocations: completed,
+        unlockedLocations: unlocked,
+        objectiveId: 'recover_library',
+        storyPhase: 'library_phase',
+      );
+    }
+    if (!completed.contains('dormitory')) {
+      return _MapProgress(
+        completedLocations: completed,
+        unlockedLocations: unlocked,
+        objectiveId: 'recover_dormitory',
+        storyPhase: 'dormitory_phase',
+      );
+    }
+    return _MapProgress(
+      completedLocations: completed,
+      unlockedLocations: unlocked,
+      objectiveId: 'confirm_basement',
+      storyPhase: 'basement_phase',
+    );
+  }
+}
+
+class _MapProgress {
+  const _MapProgress({
+    required this.completedLocations,
+    required this.unlockedLocations,
+    required this.objectiveId,
+    required this.storyPhase,
+  });
+
+  final Set<String> completedLocations;
+  final Set<String> unlockedLocations;
+  final String objectiveId;
+  final String storyPhase;
 }
 
 class StoryLocation {
@@ -348,11 +512,15 @@ class _MapMarker extends StatefulWidget {
   const _MapMarker({
     required this.location,
     required this.found,
+    required this.unlocked,
+    required this.completed,
     required this.onTap,
   });
 
   final StoryLocation location;
   final int found;
+  final bool unlocked;
+  final bool completed;
   final VoidCallback onTap;
 
   @override
@@ -387,19 +555,28 @@ class _MapMarkerState extends State<_MapMarker>
         final glow = 0.10 + (_controller.value * 0.10);
 
         return GestureDetector(
-          onTap: widget.onTap,
+          onTap: widget.unlocked ? widget.onTap : null,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Transform.scale(
                 scale: scale,
                 child: Icon(
-                  Icons.location_on_rounded,
-                  color: widget.location.markerColor,
+                  widget.completed
+                      ? Icons.verified_rounded
+                      : (widget.unlocked
+                          ? Icons.location_on_rounded
+                          : Icons.lock_outline_rounded),
+                  color: widget.unlocked
+                      ? widget.location.markerColor
+                      : Colors.white54,
                   size: 32,
                   shadows: [
                     Shadow(
-                      color: widget.location.markerColor.withValues(alpha: 0.55),
+                      color: (widget.unlocked
+                              ? widget.location.markerColor
+                              : Colors.white54)
+                          .withValues(alpha: 0.55),
                       blurRadius: 18,
                     ),
                   ],
@@ -422,7 +599,11 @@ class _MapMarkerState extends State<_MapMarker>
                     if (widget.location.clueIds.isNotEmpty) ...[
                       const SizedBox(height: 3),
                       Text(
-                        '${widget.found} / ${widget.location.clueIds.length} clues',
+                        widget.completed
+                            ? 'COMPLETE'
+                            : (widget.unlocked
+                                ? '${widget.found} / ${widget.location.clueIds.length} clues'
+                                : 'LOCKED'),
                         style: const TextStyle(
                           color: Color(0xFF7CFF41),
                           fontSize: 10,

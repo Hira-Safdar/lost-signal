@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lost_signal/shared/game/game_controller.dart';
 
 import '../models/player_profile.dart';
 import 'chapter_intro_screen.dart';
@@ -83,7 +84,11 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen> {
                   ),
                   const SizedBox(height: 18),
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
+                      await GameScope.read(context).setCharacter(_selected);
+                      if (!context.mounted) {
+                        return;
+                      }
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => ChapterIntroScreen(gender: _selected),

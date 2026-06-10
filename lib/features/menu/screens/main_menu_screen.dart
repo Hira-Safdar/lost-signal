@@ -4,9 +4,16 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:lost_signal/features/about/screens/about_screen.dart';
+import 'package:lost_signal/features/chat/screens/chat_screen.dart';
 import 'package:lost_signal/features/settings/screens/settings_screen.dart';
+import 'package:lost_signal/features/story/screens/campus_map_screen.dart';
+import 'package:lost_signal/features/story/screens/case_file_screen.dart';
 import 'package:lost_signal/features/story/screens/character_select_screen.dart';
+import 'package:lost_signal/features/story/screens/chapter_intro_screen.dart';
+import 'package:lost_signal/features/story/screens/ending_screen.dart';
+import 'package:lost_signal/features/story/models/player_profile.dart';
 import 'package:lost_signal/shared/settings/app_settings.dart';
+import 'package:lost_signal/shared/game/game_controller.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
@@ -195,13 +202,10 @@ class _MainMenuScreenState extends State<MainMenuScreen>
 
   void _handleMenuTap(int index) {
     _selectIndex(index);
-    if (_items[index].title == 'NEW GAME' ||
-        _items[index].title == 'CONTINUE') {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => const CharacterSelectScreen(),
-        ),
-      );
+    if (_items[index].title == 'NEW GAME') {
+      _startNewGame();
+    } else if (_items[index].title == 'CONTINUE') {
+      _continueGame();
     } else if (_items[index].title == 'SETTINGS') {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -215,6 +219,59 @@ class _MainMenuScreenState extends State<MainMenuScreen>
         ),
       );
     }
+  }
+
+  Future<void> _startNewGame() async {
+    final game = GameScope.read(context);
+    await game.startNewGame();
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const CharacterSelectScreen(),
+      ),
+    );
+  }
+
+  void _continueGame() {
+    final game = GameScope.read(context);
+    if (!game.canContinue && !game.hasEnding) {
+      _startNewGame();
+      return;
+    }
+
+    final save = game.save;
+    Widget destination;
+    switch (save.currentScreenId) {
+      case 'character_select':
+        destination = const CharacterSelectScreen();
+      case 'chapter_intro':
+        destination = ChapterIntroScreen(gender: game.selectedGender ?? PlayerGender.male);
+      case 'chat':
+        destination = ChatScreen(gender: game.selectedGender ?? PlayerGender.male);
+      case 'campus_map':
+        destination = CampusMapScreen(
+          gender: game.selectedGender ?? PlayerGender.male,
+          signalStrength: save.signalStrength,
+          trustScore: save.trustScore,
+        );
+      case 'case_file':
+        destination = const CaseFileScreen();
+      case 'ending':
+        destination = EndingScreen(
+          gender: game.selectedGender ?? PlayerGender.male,
+          signalStrength: save.signalStrength,
+          trustScore: save.trustScore,
+          clueCount: save.collectedClueIds.length,
+        );
+      default:
+        destination = const CharacterSelectScreen();
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => destination),
+    );
   }
 
   @override

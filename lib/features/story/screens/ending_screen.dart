@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lost_signal/shared/game/game_controller.dart';
 
 import '../models/player_profile.dart';
 
@@ -20,6 +21,7 @@ class EndingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final game = GameScope.of(context);
     final title = _goodEnding ? 'ENDING: SIGNAL HELD' : 'ENDING: TOO LATE';
     final body = _goodEnding
         ? '${gender.subject} reached Room 207 with Nathan Kim\'s ID, the missing report, his broken phone draft, the dorm access card, and the basement key. The evidence proved Nathan was lured across campus and that the real answer lies below the university.'
@@ -81,27 +83,61 @@ class EndingScreen extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                      decoration: _panelDecoration(glow: 0.12),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.home_rounded, color: Color(0xFF7CFF41), size: 24),
-                          SizedBox(width: 10),
-                          Text(
-                            'RETURN TO MAIN MENU',
-                            style: TextStyle(
-                              color: Color(0xFFEAFAEA),
-                              fontSize: 16,
-                              letterSpacing: 1.1,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            await game.replayChapter();
+                            if (context.mounted) {
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                            decoration: _panelDecoration(glow: 0.12),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.refresh_rounded, color: Color(0xFF7CFF41), size: 24),
+                                SizedBox(width: 10),
+                                Text(
+                                  'REPLAY',
+                                  style: TextStyle(
+                                    color: Color(0xFFEAFAEA),
+                                    fontSize: 16,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                            decoration: _panelDecoration(glow: 0.12),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.home_rounded, color: Color(0xFF7CFF41), size: 24),
+                                SizedBox(width: 10),
+                                Text(
+                                  'MAIN MENU',
+                                  style: TextStyle(
+                                    color: Color(0xFFEAFAEA),
+                                    fontSize: 16,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

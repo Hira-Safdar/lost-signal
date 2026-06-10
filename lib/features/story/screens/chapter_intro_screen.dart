@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lost_signal/shared/game/game_controller.dart';
 
 import '../../chat/screens/chat_screen.dart';
 import '../models/player_profile.dart';
@@ -89,7 +90,11 @@ class ChapterIntroScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
+                      await GameScope.read(context).openChat();
+                      if (!context.mounted) {
+                        return;
+                      }
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute<void>(
                           builder: (_) => ChatScreen(gender: gender),

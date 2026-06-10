@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lost_signal/shared/game/game_controller.dart';
 import 'package:lost_signal/shared/settings/app_settings.dart';
 
 import '../../story/models/player_profile.dart';
@@ -25,6 +26,14 @@ class _ChatScreenState extends State<ChatScreen> {
     'basement': 'assets/images/basement.png',
   };
 
+  static const Map<String, String> _locationLabels = {
+    'dormitory': 'DORM STAIRWELL',
+    'engineering': 'ENGINEERING BLOCK',
+    'admin': 'ADMIN CORRIDOR',
+    'library': 'LIBRARY STAIRS',
+    'basement': 'BASEMENT ACCESS',
+  };
+
   static const List<ChatMessage> _seedMessages = [
     ChatMessage(
       sender: MessageSender.unknownStudent,
@@ -36,23 +45,6 @@ class _ChatScreenState extends State<ChatScreen> {
       text: 'I don\'t have much time.',
       timestamp: '2:14 AM',
     ),
-    ChatMessage(
-      sender: MessageSender.unknownStudent,
-      text: 'I left the dormitory after someone texted me to come downstairs. Something started following me near the stairwell.',
-      timestamp: '2:14 AM',
-    ),
-    ChatMessage(
-      sender: MessageSender.unknownStudent,
-      text: 'It knows my name. It started after I checked the missing report board.',
-      timestamp: '2:15 AM',
-      isCorrupted: true,
-    ),
-    ChatMessage(
-      sender: MessageSender.unknownStudent,
-      text: 'I can hear it... right now. If I lose signal, start at Engineering Block and follow the trail.',
-      timestamp: '2:16 AM',
-      isCorrupted: true,
-    ),
   ];
 
   static const Map<String, _StoryNodeBase> _storyGraph = {
@@ -61,210 +53,350 @@ class _ChatScreenState extends State<ChatScreen> {
       prompt: 'CHOOSE YOUR RESPONSE',
       choices: [
         _StoryChoice(
-          text: 'Where are you?',
-          signalDelta: -6,
-          nextNodeId: 'location',
-          locationId: 'admin',
+          text: 'Where are you right now?',
+          signalDelta: -5,
+          nextNodeId: 'dorm_location',
+          locationId: 'dormitory',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I was in Engineering Block a minute ago. Now I am cutting through the admin corridor toward the library stairs.',
-            timestamp: '2:16 AM',
+            text: 'Dormitory west stairwell. I left my room because someone texted me to come downstairs.',
+            timestamp: '2:15 AM',
           ),
         ),
         _StoryChoice(
           text: 'Who is this?',
-          signalDelta: -14,
-          nextNodeId: 'identity',
-          locationId: 'admin',
+          signalDelta: -7,
+          nextNodeId: 'dorm_identity',
+          locationId: 'dormitory',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Nathan. Nathan Kim. If that name means nothing, look at the report in admin.',
-            timestamp: '2:17 AM',
+            text: 'Nathan. Nathan Kim. Third year. Please tell me you can see these messages.',
+            timestamp: '2:15 AM',
             isCorrupted: true,
           ),
         ),
         _StoryChoice(
-          text: 'What is following you?',
-          signalDelta: -9,
-          nextNodeId: 'threat',
+          text: 'What happened?',
+          signalDelta: -6,
+          nextNodeId: 'dorm_threat',
+          locationId: 'dormitory',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Something started following me after I checked the missing report board. I hear it every time the hall goes quiet.',
+            timestamp: '2:15 AM',
+          ),
+        ),
+      ],
+    ),
+    'dorm_location': _StoryNode(
+      id: 'dorm_location',
+      prompt: 'LAST PING: DORM STAIRWELL',
+      choices: [
+        _StoryChoice(
+          text: 'Go somewhere brighter.',
+          signalDelta: -7,
+          nextNodeId: 'engineering_trace',
           locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I never saw it clearly. It sounds like shoes dragging behind me, then metal keys every time I reach a locked door.',
+            text: 'Moving to Engineering Block. The main corridor lights are still on there.',
+            timestamp: '2:16 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Hide and stay quiet.',
+          signalDelta: -14,
+          nextNodeId: 'dorm_hide',
+          locationId: 'dormitory',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Silence makes it stop outside the door. That feels worse.',
+            timestamp: '2:16 AM',
+            isCorrupted: true,
+          ),
+        ),
+        _StoryChoice(
+          text: 'Call campus security.',
+          signalDelta: -12,
+          nextNodeId: 'admin_trace',
+          locationId: 'admin',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'I tried. The line cut out. I am heading toward admin instead.',
+            timestamp: '2:16 AM',
+          ),
+        ),
+      ],
+    ),
+    'dorm_identity': _StoryNode(
+      id: 'dorm_identity',
+      prompt: 'IDENTITY CHECK',
+      choices: [
+        _StoryChoice(
+          text: 'How do I know you are real?',
+          signalDelta: -7,
+          nextNodeId: 'engineering_trace',
+          locationId: 'engineering',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'My student ID is on an engineering desk. I dropped it when I started running.',
+            timestamp: '2:16 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Why message me?',
+          signalDelta: -8,
+          nextNodeId: 'admin_trace',
+          locationId: 'admin',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Because you stopped at the missing report this morning. I thought you might come back.',
+            timestamp: '2:16 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Tell me your route.',
+          signalDelta: -5,
+          nextNodeId: 'engineering_trace',
+          locationId: 'engineering',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Dorm. Engineering. Admin. Library. I think it wants me below campus.',
+            timestamp: '2:16 AM',
+          ),
+        ),
+      ],
+    ),
+    'dorm_threat': _StoryNode(
+      id: 'dorm_threat',
+      prompt: 'THREAT RESPONSE WINDOW OPEN',
+      choices: [
+        _StoryChoice(
+          text: 'Keep walking and update me.',
+          signalDelta: -5,
+          nextNodeId: 'engineering_trace',
+          locationId: 'engineering',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Okay. I am in Engineering now. There is a missing poster here with my face on it.',
+            timestamp: '2:16 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Look behind you once.',
+          signalDelta: -18,
+          nextNodeId: 'dorm_hide',
+          locationId: 'dormitory',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'I looked. Nothing there. But the end door was open.',
+            timestamp: '2:16 AM',
+            isCorrupted: true,
+          ),
+        ),
+        _StoryChoice(
+          text: 'Find the nearest locked room.',
+          signalDelta: -9,
+          nextNodeId: 'engineering_trace',
+          locationId: 'engineering',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Engineering has locked rooms. Some only lock from outside. That is not normal.',
+            timestamp: '2:16 AM',
+          ),
+        ),
+      ],
+    ),
+    'dorm_hide': _StoryNode(
+      id: 'dorm_hide',
+      prompt: 'SIGNAL DETERIORATING',
+      choices: [
+        _StoryChoice(
+          text: 'Run now.',
+          signalDelta: -8,
+          nextNodeId: 'engineering_trace',
+          locationId: 'engineering',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Running. I made it into Engineering. My hands are shaking.',
+            timestamp: '2:17 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'What do you hear?',
+          signalDelta: -10,
+          nextNodeId: 'engineering_trace',
+          locationId: 'engineering',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Dragging shoes. Metal keys. It gets louder when the hall goes dark.',
             timestamp: '2:17 AM',
           ),
         ),
       ],
     ),
-    'location': _StoryNode(
-      id: 'location',
-      prompt: 'SIGNAL ROUTED: LOCATION TRACE',
+    'engineering_trace': _StoryNode(
+      id: 'engineering_trace',
+      prompt: 'LAST PING: ENGINEERING BLOCK',
       choices: [
         _StoryChoice(
-          text: 'Stay where you are.',
-          signalDelta: -7,
-          nextNodeId: 'ending_stay',
-          locationId: 'engineering',
+          text: 'Check the desk area.',
+          signalDelta: -6,
+          nextNodeId: 'admin_trace',
+          locationId: 'admin',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I tried. It gets closer whenever I stop. I left my ID in Engineering and the report is still near the admin office.',
-            timestamp: '2:18 AM',
+            text: 'Found my ID near a desk. I am moving toward admin now.',
+            timestamp: '2:17 AM',
           ),
         ),
         _StoryChoice(
-          text: 'Hide somewhere.',
-          signalDelta: -18,
-          nextNodeId: 'ending_hide',
+          text: 'What else do you see there?',
+          signalDelta: -7,
+          nextNodeId: 'admin_trace',
+          locationId: 'admin',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'A missing poster. My face. It should not still be here.',
+            timestamp: '2:17 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Skip ahead. Go to admin.',
+          signalDelta: -8,
+          nextNodeId: 'admin_trace',
+          locationId: 'admin',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'On the way. Admin corridor feels empty in a bad way.',
+            timestamp: '2:17 AM',
+          ),
+        ),
+      ],
+    ),
+    'admin_trace': _StoryNode(
+      id: 'admin_trace',
+      prompt: 'LAST PING: ADMIN CORRIDOR',
+      choices: [
+        _StoryChoice(
+          text: 'Is the report still there?',
+          signalDelta: -6,
+          nextNodeId: 'library_trace',
           locationId: 'library',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I found a dark archive room off the library stairs. I can hear the same static inside that came through my phone.',
+            text: 'Yes. Someone stamped it and circled my name. I am heading to the library stairs.',
             timestamp: '2:18 AM',
-            isCorrupted: true,
           ),
         ),
         _StoryChoice(
-          text: 'I am coming.',
-          signalDelta: -12,
-          nextNodeId: 'ending_come',
+          text: 'Did anyone see you?',
+          signalDelta: -8,
+          nextNodeId: 'library_trace',
+          locationId: 'library',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'No one. Just my report and an open archive side door down the hall.',
+            timestamp: '2:18 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Keep moving. Do not stop there.',
+          signalDelta: -5,
+          nextNodeId: 'library_trace',
+          locationId: 'library',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Moving. Library signal is weaker already.',
+            timestamp: '2:18 AM',
+          ),
+        ),
+      ],
+    ),
+    'library_trace': _StoryNode(
+      id: 'library_trace',
+      prompt: 'LAST PING: LIBRARY STAIRS',
+      choices: [
+        _StoryChoice(
+          text: 'Did you find your phone?',
+          signalDelta: -6,
+          nextNodeId: 'basement_trace',
           locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Then bring proof. My student card is in Engineering, the report is near Admin, and something below campus is waiting.',
-            timestamp: '2:18 AM',
+            text: 'Yes. Screen cracked. There is a draft mentioning a basement service door.',
+            timestamp: '2:19 AM',
           ),
         ),
-      ],
-    ),
-    'identity': _StoryNode(
-      id: 'identity',
-      prompt: 'MEMORY CONFLICT DETECTED',
-      choices: [
         _StoryChoice(
-          text: 'Why do I know you?',
+          text: 'Send me anything else you found.',
+          signalDelta: -7,
+          nextNodeId: 'basement_trace',
+          locationId: 'basement',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'A blurred photo too. Admin corridor. Same night. I am moving again.',
+            timestamp: '2:19 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Where does this route end?',
           signalDelta: -8,
-          nextNodeId: 'ending_memory',
-          locationId: 'admin',
+          nextNodeId: 'basement_trace',
+          locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Because you saw my report this morning and kept walking. You were the only one who stopped reading it.',
-            timestamp: '2:18 AM',
-            isCorrupted: true,
-          ),
-        ),
-        _StoryChoice(
-          text: 'You have the wrong number.',
-          signalDelta: -20,
-          nextNodeId: 'ending_wrong',
-          locationId: 'library',
-          response: ChatMessage(
-            sender: MessageSender.unknownStudent,
-            text: 'No. This phone unlocked when it saw your number in my broken contacts draft.',
-            timestamp: '2:18 AM',
-            isCorrupted: true,
-          ),
-        ),
-        _StoryChoice(
-          text: 'Tell me your name.',
-          signalDelta: -10,
-          nextNodeId: 'ending_name',
-          locationId: 'engineering',
-          response: ChatMessage(
-            sender: MessageSender.unknownStudent,
-            text: 'Nathan Kim. If the text glitches again, check my ID upstairs, then the broken phone in the library.',
+            text: 'Below campus. There is a maintenance way down behind the archive side.',
             timestamp: '2:19 AM',
           ),
         ),
       ],
     ),
-    'threat': _StoryNode(
-      id: 'threat',
-      prompt: 'THREAT RESPONSE WINDOW OPEN',
+    'basement_trace': _StoryNode(
+      id: 'basement_trace',
+      prompt: 'FINAL ROUTE CONFIRMED',
       choices: [
         _StoryChoice(
-          text: 'Keep moving.',
+          text: 'I am coming to campus.',
+          signalDelta: -8,
+          nextNodeId: 'ending_come',
+          locationId: 'basement',
+          response: ChatMessage(
+            sender: MessageSender.unknownStudent,
+            text: 'Then follow the trail. Engineering. Admin. Library. Basement. Do not skip anything.',
+            timestamp: '2:20 AM',
+          ),
+        ),
+        _StoryChoice(
+          text: 'Stay online. Keep talking.',
           signalDelta: -6,
           nextNodeId: 'ending_move',
           locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'It hates movement. I think it wants me cornered before I reach the basement access door.',
-            timestamp: '2:18 AM',
+            text: 'I am trying. The door below campus is open now.',
+            timestamp: '2:20 AM',
           ),
         ),
         _StoryChoice(
-          text: 'Turn around and look.',
-          signalDelta: -22,
-          nextNodeId: 'ending_look',
-          locationId: 'library',
+          text: 'Do not go down there alone.',
+          signalDelta: -10,
+          nextNodeId: 'ending_lock',
+          locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I did once. It was standing where my missing poster should have been.',
-            timestamp: '2:19 AM',
+            text: 'I may not have a choice. Something is behind me again.',
+            timestamp: '2:20 AM',
             isCorrupted: true,
           ),
         ),
-        _StoryChoice(
-          text: 'Lock the nearest door.',
-          signalDelta: -11,
-          nextNodeId: 'ending_lock',
-          locationId: 'admin',
-          response: ChatMessage(
-            sender: MessageSender.unknownStudent,
-            text: 'The doors lock from the outside only. Someone used a campus security card and herded me from one block to the next.',
-            timestamp: '2:18 AM',
-          ),
-        ),
       ],
-    ),
-    'ending_stay': _EndingNode(
-      id: 'ending_stay',
-      finalMessage: ChatMessage(
-        sender: MessageSender.system,
-        text: 'Signal weakening. Last pings detected across Engineering, Admin corridor, and the library stairwell.',
-        timestamp: '2:19 AM',
-        isCorrupted: true,
-      ),
-    ),
-    'ending_hide': _EndingNode(
-      id: 'ending_hide',
-      finalMessage: ChatMessage(
-        sender: MessageSender.system,
-        text: 'Connection unstable. Library archive door opened. Route from Admin to basement recommended.',
-        timestamp: '2:19 AM',
-        isCorrupted: true,
-      ),
     ),
     'ending_come': _EndingNode(
       id: 'ending_come',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
         text: 'Transmission held. Route to campus saved. Recover Nathan Kim\'s trail before the basement opens.',
-        timestamp: '2:19 AM',
-      ),
-    ),
-    'ending_memory': _EndingNode(
-      id: 'ending_memory',
-      finalMessage: ChatMessage(
-        sender: MessageSender.system,
-        text: 'Archive fragment restored. Missing-student file linked to Engineering, the Admin corridor, and a basement maintenance route.',
-        timestamp: '2:19 AM',
-      ),
-    ),
-    'ending_wrong': _EndingNode(
-      id: 'ending_wrong',
-      finalMessage: ChatMessage(
-        sender: MessageSender.system,
-        text: 'Identity mismatch denied. Broken phone contact list still points to you.',
-        timestamp: '2:19 AM',
-        isCorrupted: true,
-      ),
-    ),
-    'ending_name': _EndingNode(
-      id: 'ending_name',
-      finalMessage: ChatMessage(
-        sender: MessageSender.system,
-        text: 'Name confirmed: Nathan Kim. Student ID verification pending on campus.',
         timestamp: '2:20 AM',
       ),
     ),
@@ -272,17 +404,8 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_move',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'Motion preserved the link. Contact still mobile between the library stairs and the basement route.',
-        timestamp: '2:19 AM',
-      ),
-    ),
-    'ending_look': _EndingNode(
-      id: 'ending_look',
-      finalMessage: ChatMessage(
-        sender: MessageSender.system,
-        text: 'Visual contact established. Missing-poster match detected. Feed terminated.',
-        timestamp: '2:19 AM',
-        isCorrupted: true,
+        text: 'Motion preserved the link. Contact still mobile near the basement access route.',
+        timestamp: '2:20 AM',
       ),
     ),
     'ending_lock': _EndingNode(
@@ -290,7 +413,7 @@ class _ChatScreenState extends State<ChatScreen> {
       finalMessage: ChatMessage(
         sender: MessageSender.system,
         text: 'External lock protocol failed. Security-card access points remain active across campus.',
-        timestamp: '2:19 AM',
+        timestamp: '2:20 AM',
       ),
     ),
   };
@@ -307,11 +430,21 @@ class _ChatScreenState extends State<ChatScreen> {
   Timer? _replyTimer;
   Timer? _introTimer;
   int _introIndex = 0;
+  GameController? _game;
 
   @override
   void initState() {
     super.initState();
-    _startIntroSequence();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final game = GameScope.of(context);
+    if (!identical(_game, game)) {
+      _game = game;
+      _hydrateFromSave(game);
+    }
   }
 
   @override
@@ -326,6 +459,33 @@ class _ChatScreenState extends State<ChatScreen> {
     _queueNextIntroMessage(initial: true);
   }
 
+  void _hydrateFromSave(GameController game) {
+    final save = game.save;
+    _currentNodeId = save.currentChatNodeId;
+    _currentLocationId = save.lastPingLocationId;
+    _signalStrength = save.signalStrength;
+    _trustScore = save.trustScore;
+    if (save.messageLog.isNotEmpty) {
+      _messages
+        ..clear()
+        ..addAll(
+          save.messageLog.map(
+            (entry) => ChatMessage(
+              sender: MessageSender.values.byName(entry['sender'] as String),
+              text: entry['text'] as String,
+              timestamp: entry['timestamp'] as String,
+              isCorrupted: entry['isCorrupted'] as bool? ?? false,
+            ),
+          ),
+        );
+      _introIndex = _seedMessages.length;
+      _isLocked = false;
+      _isTyping = false;
+    } else if (_introIndex == 0 && _messages.isEmpty) {
+      _startIntroSequence();
+    }
+  }
+
   void _queueNextIntroMessage({bool initial = false}) {
     if (_introIndex >= _seedMessages.length) {
       if (mounted) {
@@ -337,7 +497,8 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    final delay = initial ? const Duration(milliseconds: 600) : const Duration(milliseconds: 1400);
+    final delay =
+        initial ? const Duration(milliseconds: 600) : const Duration(milliseconds: 1300);
     setState(() {
       _isTyping = true;
       _isLocked = true;
@@ -355,6 +516,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _isTyping = false;
       });
       _scrollToBottom();
+      _persistChatState();
 
       if (_introIndex < _seedMessages.length) {
         _queueNextIntroMessage();
@@ -369,15 +531,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void _handleChoiceTap(int index) {
     final node = _currentNode;
     if (node is _EndingNode) {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => CampusMapScreen(
-            gender: widget.gender,
-            signalStrength: _signalStrength,
-            trustScore: _trustScore,
-          ),
-        ),
-      );
+      _openMapFromChat();
       return;
     }
 
@@ -399,17 +553,17 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _scrollToBottom();
+    _persistChatState();
 
     _replyTimer?.cancel();
-    _replyTimer = Timer(const Duration(milliseconds: 1100), () {
+    _replyTimer = Timer(_responseDelay, () async {
       if (!mounted) {
         return;
       }
 
       setState(() {
-        _signalStrength = (_signalStrength + selectedChoice.signalDelta)
-            .clamp(24, 99)
-            .toInt();
+        _signalStrength =
+            (_signalStrength + selectedChoice.signalDelta).clamp(24, 99).toInt();
         _trustScore = (_trustScore + (selectedChoice.signalDelta > -10 ? 4 : -6))
             .clamp(20, 90)
             .toInt();
@@ -427,7 +581,67 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       _scrollToBottom();
+      await _persistChatState();
     });
+  }
+
+  Future<void> _openMapFromChat() async {
+    await _game?.openMap(
+      storyPhase: 'engineering_phase',
+      objectiveId: 'recover_engineering',
+      lastPingLocationId: _currentLocationId,
+      unlockedLocationIds: const <String>['engineering'],
+    );
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CampusMapScreen(
+          gender: widget.gender,
+          signalStrength: _signalStrength,
+          trustScore: _trustScore,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _persistChatState() {
+    return _game?.saveChatState(
+          currentNodeId: _currentNodeId,
+          storyPhase: _storyPhaseForNode(_currentNodeId),
+          lastPingLocationId: _currentLocationId,
+          signalStrength: _signalStrength,
+          trustScore: _trustScore,
+          messages: _messages,
+        ) ??
+        Future<void>.value();
+  }
+
+  String _storyPhaseForNode(String nodeId) {
+    if (nodeId.startsWith('dorm') || nodeId == 'entry') {
+      return 'chat_dorm';
+    }
+    if (nodeId.startsWith('engineering')) {
+      return 'chat_engineering';
+    }
+    if (nodeId.startsWith('admin')) {
+      return 'chat_admin';
+    }
+    if (nodeId.startsWith('library')) {
+      return 'chat_library';
+    }
+    return 'chat_basement';
+  }
+
+  Duration get _responseDelay {
+    if (_signalStrength <= 40) {
+      return const Duration(milliseconds: 1700);
+    }
+    if (_signalStrength <= 60) {
+      return const Duration(milliseconds: 1350);
+    }
+    return const Duration(milliseconds: 1000);
   }
 
   void _scrollToBottom() {
@@ -444,7 +658,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   String get _playerTimestamp {
-    final minute = 16 + ((_messages.length - _seedMessages.length).clamp(0, 999) ~/ 2);
+    final minute = 15 + (_messages.length ~/ 2);
     return '2:${minute.toString().padLeft(2, '0')} AM';
   }
 
@@ -503,7 +717,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       SizedBox(height: isCompact ? 10 : 14),
                       Expanded(
                         child: Container(
-                          decoration: _chatPanelDecoration(radius: isCompact ? 14 : 0),
+                          decoration:
+                              _chatPanelDecoration(radius: isCompact ? 14 : 0),
                           child: Column(
                             children: [
                               SizedBox(height: isCompact ? 12 : 18),
@@ -535,7 +750,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                         alignment: Alignment.centerRight,
                                         child: Opacity(
                                           opacity: isCompact ? 0.05 : 0.09,
-                                          child: Image.asset(_backgroundImagePath, fit: BoxFit.cover),
+                                          child: Image.asset(
+                                            _backgroundImagePath,
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -548,7 +766,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                         isCompact ? 12 : 16,
                                       ),
                                       itemCount: _messages.length,
-                                      separatorBuilder: (_, _) => SizedBox(height: isCompact ? 10 : 14),
+                                      separatorBuilder: (_, _) => SizedBox(
+                                        height: isCompact ? 10 : 14,
+                                      ),
                                       itemBuilder: (context, index) {
                                         return _ChatBubble(
                                           message: _messages[index],
@@ -560,14 +780,17 @@ class _ChatScreenState extends State<ChatScreen> {
                                       Positioned(
                                         right: isCompact ? 12 : 18,
                                         bottom: isCompact ? 10 : 18,
-                                        child: _TypingIndicator(compact: isCompact),
+                                        child: _TypingIndicator(
+                                          compact: isCompact,
+                                        ),
                                       ),
                                   ],
                                 ),
                               ),
                               Container(
                                 height: 1,
-                                color: const Color(0xFF7CFF41).withValues(alpha: 0.28),
+                                color: const Color(0xFF7CFF41)
+                                    .withValues(alpha: 0.28),
                               ),
                               Padding(
                                 padding: EdgeInsets.fromLTRB(
@@ -593,14 +816,16 @@ class _ChatScreenState extends State<ChatScreen> {
                                     ...List.generate(_visibleChoices.length, (index) {
                                       return Padding(
                                         padding: EdgeInsets.only(
-                                          bottom: index == _visibleChoices.length - 1
-                                              ? 0
-                                              : (isCompact ? 8 : 12),
+                                          bottom:
+                                              index == _visibleChoices.length - 1
+                                                  ? 0
+                                                  : (isCompact ? 8 : 12),
                                         ),
                                         child: _ResponseOption(
                                           text: _visibleChoices[index],
                                           compact: isCompact,
-                                          disabled: _isLocked && _currentNode is! _EndingNode,
+                                          disabled: _isLocked &&
+                                              _currentNode is! _EndingNode,
                                           onTap: () => _handleChoiceTap(index),
                                         ),
                                       );
@@ -655,31 +880,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 SizedBox(height: isCompact ? 2 : 4),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 2,
-                  children: [
-                    Text(
-                      'STATUS:',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: isCompact ? 10 : 12,
-                        letterSpacing: isCompact ? 1.0 : 1.5,
-                      ),
-                    ),
-                    Text(
-                      _isTyping
-                          ? 'TYPING \u25cf'
-                          : (_currentNode is _EndingNode
-                              ? 'OFFLINE \u25cf'
-                              : 'ONLINE \u25cf'),
-                      style: TextStyle(
-                        color: const Color(0xFF7CFF41),
-                        fontSize: isCompact ? 10 : 12,
-                        letterSpacing: isCompact ? 1.0 : 1.5,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'LAST PING: ${_locationLabels[_currentLocationId] ?? 'UNKNOWN'}',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: isCompact ? 10 : 12,
+                    letterSpacing: isCompact ? 1.0 : 1.5,
+                  ),
                 ),
               ],
             ),
@@ -703,11 +910,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 weak: _signalStrength <= 45,
               ),
             ],
-          ),
-          SizedBox(width: isCompact ? 8 : 16),
-          _SquareTerminalButton(
-            icon: Icons.menu_rounded,
-            compact: isCompact,
           ),
         ],
       ),
@@ -737,7 +939,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 SizedBox(height: isCompact ? 4 : 6),
                 Text(
-                  _messages.last.timestamp,
+                  _messages.isEmpty ? '--:--' : _messages.last.timestamp,
                   style: TextStyle(
                     color: const Color(0xFF7CFF41),
                     fontSize: isCompact ? 13 : 16,
@@ -857,9 +1059,8 @@ class _ChatBubble extends StatelessWidget {
           child: Text(
             isPlayer ? 'YOU' : 'UNKNOWN',
             style: TextStyle(
-              color: isPlayer
-                  ? const Color(0xFFB8FFD8)
-                  : const Color(0xFF7CFF41),
+              color:
+                  isPlayer ? const Color(0xFFB8FFD8) : const Color(0xFF7CFF41),
               fontSize: compact ? 10 : 12,
               letterSpacing: compact ? 1.0 : 1.6,
             ),
