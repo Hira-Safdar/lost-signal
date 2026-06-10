@@ -59,7 +59,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'dormitory',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Dormitory west stairwell. I left my room because someone texted me to come downstairs.',
+            text:
+                'Dormitory west stairwell. I left my room because someone texted me to come downstairs.',
             timestamp: '2:15 AM',
           ),
         ),
@@ -70,7 +71,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'dormitory',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Nathan. Nathan Kim. Third year. Please tell me you can see these messages.',
+            text:
+                'Nathan. Nathan Kim. Third year. Please tell me you can see these messages.',
             timestamp: '2:15 AM',
             isCorrupted: true,
           ),
@@ -82,7 +84,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'dormitory',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Something started following me after I checked the missing report board. I hear it every time the hall goes quiet.',
+            text:
+                'Something started following me after I checked the missing report board. I hear it every time the hall goes quiet.',
             timestamp: '2:15 AM',
           ),
         ),
@@ -99,7 +102,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Moving to Engineering Block. The main corridor lights are still on there.',
+            text:
+                'Moving to Engineering Block. The main corridor lights are still on there.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -122,7 +126,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'admin',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I tried. The line cut out. I am heading toward admin instead.',
+            text:
+                'I tried. The line cut out. I am heading toward admin instead.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -139,7 +144,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'My student ID is on an engineering desk. I dropped it when I started running.',
+            text:
+                'My student ID is on an engineering desk. I dropped it when I started running.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -150,7 +156,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'admin',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Because you stopped at the missing report this morning. I thought you might come back.',
+            text:
+                'Because you stopped at the missing report this morning. I thought you might come back.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -161,7 +168,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Dorm. Engineering. Admin. Library. I think it wants me below campus.',
+            text:
+                'Dorm. Engineering. Admin. Library. I think it wants me below campus.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -178,7 +186,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Okay. I am in Engineering now. There is a missing poster here with my face on it.',
+            text:
+                'Okay. I am in Engineering now. There is a missing poster here with my face on it.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -201,7 +210,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Engineering has locked rooms. Some only lock from outside. That is not normal.',
+            text:
+                'Engineering has locked rooms. Some only lock from outside. That is not normal.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -229,7 +239,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Dragging shoes. Metal keys. It gets louder when the hall goes dark.',
+            text:
+                'Dragging shoes. Metal keys. It gets louder when the hall goes dark.',
             timestamp: '2:17 AM',
           ),
         ),
@@ -285,7 +296,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'library',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Yes. Someone stamped it and circled my name. I am heading to the library stairs.',
+            text:
+                'Yes. Someone stamped it and circled my name. I am heading to the library stairs.',
             timestamp: '2:18 AM',
           ),
         ),
@@ -296,7 +308,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'library',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'No one. Just my report and an open archive side door down the hall.',
+            text:
+                'No one. Just my report and an open archive side door down the hall.',
             timestamp: '2:18 AM',
           ),
         ),
@@ -324,7 +337,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Yes. Screen cracked. There is a draft mentioning a basement service door.',
+            text:
+                'Yes. Screen cracked. There is a draft mentioning a basement service door.',
             timestamp: '2:19 AM',
           ),
         ),
@@ -335,7 +349,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'A blurred photo too. Admin corridor. Same night. I am moving again.',
+            text:
+                'A blurred photo too. Admin corridor. Same night. I am moving again.',
             timestamp: '2:19 AM',
           ),
         ),
@@ -346,7 +361,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Below campus. There is a maintenance way down behind the archive side.',
+            text:
+                'Below campus. There is a maintenance way down behind the archive side.',
             timestamp: '2:19 AM',
           ),
         ),
@@ -363,7 +379,8 @@ class _ChatScreenState extends State<ChatScreen> {
           locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Then follow the trail. Engineering. Admin. Library. Basement. Do not skip anything.',
+            text:
+                'Then follow the trail. Engineering. Admin. Library. Basement. Do not skip anything.',
             timestamp: '2:20 AM',
           ),
         ),
@@ -396,7 +413,8 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_come',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'Transmission held. Route to campus saved. Recover Nathan Kim\'s trail before the basement opens.',
+        text:
+            'Transmission held. Route to campus saved. Recover Nathan Kim\'s trail before the basement opens.',
         timestamp: '2:20 AM',
       ),
     ),
@@ -404,7 +422,8 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_move',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'Motion preserved the link. Contact still mobile near the basement access route.',
+        text:
+            'Motion preserved the link. Contact still mobile near the basement access route.',
         timestamp: '2:20 AM',
       ),
     ),
@@ -412,7 +431,8 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_lock',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'External lock protocol failed. Security-card access points remain active across campus.',
+        text:
+            'External lock protocol failed. Security-card access points remain active across campus.',
         timestamp: '2:20 AM',
       ),
     ),
@@ -497,8 +517,9 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    final delay =
-        initial ? const Duration(milliseconds: 600) : const Duration(milliseconds: 1300);
+    final delay = initial
+        ? const Duration(milliseconds: 600)
+        : const Duration(milliseconds: 1300);
     setState(() {
       _isTyping = true;
       _isLocked = true;
@@ -562,11 +583,13 @@ class _ChatScreenState extends State<ChatScreen> {
       }
 
       setState(() {
-        _signalStrength =
-            (_signalStrength + selectedChoice.signalDelta).clamp(24, 99).toInt();
-        _trustScore = (_trustScore + (selectedChoice.signalDelta > -10 ? 4 : -6))
-            .clamp(20, 90)
+        _signalStrength = (_signalStrength + selectedChoice.signalDelta)
+            .clamp(24, 99)
             .toInt();
+        _trustScore =
+            (_trustScore + (selectedChoice.signalDelta > -10 ? 4 : -6))
+                .clamp(20, 90)
+                .toInt();
         _messages.add(selectedChoice.response);
         _isTyping = false;
         _currentNodeId = selectedChoice.nextNodeId;
@@ -670,6 +693,9 @@ class _ChatScreenState extends State<ChatScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 700;
+        final chatWidth = isCompact
+            ? constraints.maxWidth
+            : constraints.maxWidth.clamp(0.0, 1040.0);
 
         return Scaffold(
           backgroundColor: Colors.black,
@@ -704,142 +730,160 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               if (settings.scanlinesEnabled) const _ChatScanlines(),
               SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    isCompact ? 12 : 18,
-                    isCompact ? 12 : 18,
-                    isCompact ? 12 : 18,
-                    isCompact ? 10 : 18,
-                  ),
-                  child: Column(
-                    children: [
-                      _buildHeader(context, isCompact),
-                      SizedBox(height: isCompact ? 10 : 14),
-                      Expanded(
-                        child: Container(
-                          decoration:
-                              _chatPanelDecoration(radius: isCompact ? 14 : 0),
-                          child: Column(
-                            children: [
-                              SizedBox(height: isCompact ? 12 : 18),
-                              Text(
-                                'ENCRYPTED CONNECTION ESTABLISHED',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: const Color(0xFF7CFF41),
-                                  fontSize: isCompact ? 10 : 12,
-                                  letterSpacing: isCompact ? 1.0 : 1.6,
-                                ),
+                child: Center(
+                  child: SizedBox(
+                    width: chatWidth,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        isCompact ? 12 : 18,
+                        isCompact ? 12 : 18,
+                        isCompact ? 12 : 18,
+                        isCompact ? 10 : 18,
+                      ),
+                      child: Column(
+                        children: [
+                          _buildHeader(context, isCompact),
+                          SizedBox(height: isCompact ? 10 : 14),
+                          Expanded(
+                            child: Container(
+                              decoration: _chatPanelDecoration(
+                                radius: isCompact ? 14 : 0,
                               ),
-                              SizedBox(height: isCompact ? 6 : 8),
-                              if (settings.subtitlesEnabled)
-                                Text(
-                                  '${widget.gender.subject} received the first message at 2:13 AM',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    fontSize: isCompact ? 10 : 12,
-                                    letterSpacing: isCompact ? 0.6 : 1.0,
+                              child: Column(
+                                children: [
+                                  SizedBox(height: isCompact ? 12 : 18),
+                                  Text(
+                                    'ENCRYPTED CONNECTION ESTABLISHED',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: const Color(0xFF7CFF41),
+                                      fontSize: isCompact ? 10 : 12,
+                                      letterSpacing: isCompact ? 1.0 : 1.6,
+                                    ),
                                   ),
-                                ),
-                              SizedBox(height: isCompact ? 10 : 14),
-                              Expanded(
-                                child: Stack(
-                                  children: [
-                                    Positioned.fill(
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Opacity(
-                                          opacity: isCompact ? 0.05 : 0.09,
-                                          child: Image.asset(
-                                            _backgroundImagePath,
-                                            fit: BoxFit.cover,
+                                  SizedBox(height: isCompact ? 6 : 8),
+                                  if (settings.subtitlesEnabled)
+                                    Text(
+                                      '${widget.gender.subject} received the first message at 2:13 AM',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        fontSize: isCompact ? 10 : 12,
+                                        letterSpacing: isCompact ? 0.6 : 1.0,
+                                      ),
+                                    ),
+                                  SizedBox(height: isCompact ? 10 : 14),
+                                  Expanded(
+                                    child: Stack(
+                                      children: [
+                                        Positioned.fill(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Opacity(
+                                              opacity: isCompact ? 0.05 : 0.09,
+                                              child: Image.asset(
+                                                _backgroundImagePath,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                    ListView.separated(
-                                      controller: _scrollController,
-                                      padding: EdgeInsets.fromLTRB(
-                                        isCompact ? 12 : 18,
-                                        0,
-                                        isCompact ? 12 : 18,
-                                        isCompact ? 12 : 16,
-                                      ),
-                                      itemCount: _messages.length,
-                                      separatorBuilder: (_, _) => SizedBox(
-                                        height: isCompact ? 10 : 14,
-                                      ),
-                                      itemBuilder: (context, index) {
-                                        return _ChatBubble(
-                                          message: _messages[index],
-                                          compact: isCompact,
-                                        );
-                                      },
-                                    ),
-                                    if (_isTyping)
-                                      Positioned(
-                                        right: isCompact ? 12 : 18,
-                                        bottom: isCompact ? 10 : 18,
-                                        child: _TypingIndicator(
-                                          compact: isCompact,
+                                        ListView.separated(
+                                          controller: _scrollController,
+                                          padding: EdgeInsets.fromLTRB(
+                                            isCompact ? 12 : 18,
+                                            0,
+                                            isCompact ? 12 : 18,
+                                            isCompact ? 12 : 16,
+                                          ),
+                                          itemCount: _messages.length,
+                                          separatorBuilder: (_, _) => SizedBox(
+                                            height: isCompact ? 10 : 14,
+                                          ),
+                                          itemBuilder: (context, index) {
+                                            return _ChatBubble(
+                                              message: _messages[index],
+                                              compact: isCompact,
+                                            );
+                                          },
                                         ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: 1,
-                                color: const Color(0xFF7CFF41)
-                                    .withValues(alpha: 0.28),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                  isCompact ? 12 : 18,
-                                  isCompact ? 12 : 16,
-                                  isCompact ? 12 : 18,
-                                  isCompact ? 12 : 18,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      _currentNode is _EndingNode
-                                          ? 'CONNECTION ENDED'
-                                          : (_currentNode as _StoryNode).prompt,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: const Color(0xFF7CFF41),
-                                        fontSize: isCompact ? 11 : 13,
-                                        letterSpacing: isCompact ? 1.3 : 2,
-                                      ),
+                                        if (_isTyping)
+                                          Positioned(
+                                            right: isCompact ? 12 : 18,
+                                            bottom: isCompact ? 10 : 18,
+                                            child: _TypingIndicator(
+                                              compact: isCompact,
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    SizedBox(height: isCompact ? 10 : 14),
-                                    ...List.generate(_visibleChoices.length, (index) {
-                                      return Padding(
-                                        padding: EdgeInsets.only(
-                                          bottom:
-                                              index == _visibleChoices.length - 1
-                                                  ? 0
-                                                  : (isCompact ? 8 : 12),
+                                  ),
+                                  Container(
+                                    height: 1,
+                                    color: const Color(
+                                      0xFF7CFF41,
+                                    ).withValues(alpha: 0.28),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(
+                                      isCompact ? 12 : 18,
+                                      isCompact ? 12 : 16,
+                                      isCompact ? 12 : 18,
+                                      isCompact ? 12 : 18,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          _currentNode is _EndingNode
+                                              ? 'CONNECTION ENDED'
+                                              : (_currentNode as _StoryNode)
+                                                    .prompt,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: const Color(0xFF7CFF41),
+                                            fontSize: isCompact ? 11 : 13,
+                                            letterSpacing: isCompact ? 1.3 : 2,
+                                          ),
                                         ),
-                                        child: _ResponseOption(
-                                          text: _visibleChoices[index],
-                                          compact: isCompact,
-                                          disabled: _isLocked &&
-                                              _currentNode is! _EndingNode,
-                                          onTap: () => _handleChoiceTap(index),
+                                        SizedBox(height: isCompact ? 10 : 14),
+                                        ...List.generate(
+                                          _visibleChoices.length,
+                                          (index) {
+                                            return Padding(
+                                              padding: EdgeInsets.only(
+                                                bottom:
+                                                    index ==
+                                                        _visibleChoices.length -
+                                                            1
+                                                    ? 0
+                                                    : (isCompact ? 8 : 12),
+                                              ),
+                                              child: _ResponseOption(
+                                                text: _visibleChoices[index],
+                                                compact: isCompact,
+                                                disabled:
+                                                    _isLocked &&
+                                                    _currentNode
+                                                        is! _EndingNode,
+                                                onTap: () =>
+                                                    _handleChoiceTap(index),
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      );
-                                    }),
-                                  ],
-                                ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          SizedBox(height: isCompact ? 10 : 14),
+                          _buildFooter(isCompact),
+                        ],
                       ),
-                      SizedBox(height: isCompact ? 10 : 14),
-                      _buildFooter(isCompact),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -905,10 +949,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               SizedBox(height: isCompact ? 4 : 6),
-              _ChatSignalBars(
-                compact: isCompact,
-                weak: _signalStrength <= 45,
-              ),
+              _ChatSignalBars(compact: isCompact, weak: _signalStrength <= 45),
             ],
           ),
         ],
@@ -962,10 +1003,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               SizedBox(height: isCompact ? 4 : 6),
-              _ChatSignalBars(
-                compact: isCompact,
-                weak: _signalStrength <= 45,
-              ),
+              _ChatSignalBars(compact: isCompact, weak: _signalStrength <= 45),
             ],
           ),
         ],
@@ -976,14 +1014,9 @@ class _ChatScreenState extends State<ChatScreen> {
   List<String> get _visibleChoices {
     final node = _currentNode;
     if (node is _EndingNode) {
-      return const [
-        'ENTER CAMPUS',
-        'OPEN CASE FILE',
-        'CHECK LAST PING',
-      ];
+      return const ['ENTER CAMPUS', 'OPEN CASE FILE', 'CHECK LAST PING'];
     }
-    return (node as _StoryNode)
-        .choices
+    return (node as _StoryNode).choices
         .map((choice) => choice.text)
         .toList(growable: false);
   }
@@ -1010,10 +1043,7 @@ class _StoryNode extends _StoryNodeBase {
 }
 
 class _EndingNode extends _StoryNodeBase {
-  const _EndingNode({
-    required super.id,
-    required this.finalMessage,
-  });
+  const _EndingNode({required super.id, required this.finalMessage});
 
   final ChatMessage finalMessage;
 }
@@ -1035,10 +1065,7 @@ class _StoryChoice {
 }
 
 class _ChatBubble extends StatelessWidget {
-  const _ChatBubble({
-    required this.message,
-    required this.compact,
-  });
+  const _ChatBubble({required this.message, required this.compact});
 
   final ChatMessage message;
   final bool compact;
@@ -1048,8 +1075,9 @@ class _ChatBubble extends StatelessWidget {
     final isPlayer = message.sender == MessageSender.player;
 
     return Column(
-      crossAxisAlignment:
-          isPlayer ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: isPlayer
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         Padding(
           padding: EdgeInsets.only(
@@ -1059,8 +1087,9 @@ class _ChatBubble extends StatelessWidget {
           child: Text(
             isPlayer ? 'YOU' : 'UNKNOWN',
             style: TextStyle(
-              color:
-                  isPlayer ? const Color(0xFFB8FFD8) : const Color(0xFF7CFF41),
+              color: isPlayer
+                  ? const Color(0xFFB8FFD8)
+                  : const Color(0xFF7CFF41),
               fontSize: compact ? 10 : 12,
               letterSpacing: compact ? 1.0 : 1.6,
             ),
@@ -1068,8 +1097,9 @@ class _ChatBubble extends StatelessWidget {
         ),
         SizedBox(height: compact ? 4 : 6),
         Row(
-          mainAxisAlignment:
-              isPlayer ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment: isPlayer
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (isPlayer) ...[
@@ -1097,23 +1127,26 @@ class _ChatBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(compact ? 12 : 0),
                   border: Border.all(
-                    color: (isPlayer
-                            ? const Color(0xFFB8FFD8)
-                            : const Color(0xFF7CFF41))
-                        .withValues(alpha: 0.55),
+                    color:
+                        (isPlayer
+                                ? const Color(0xFFB8FFD8)
+                                : const Color(0xFF7CFF41))
+                            .withValues(alpha: 0.55),
                   ),
-                  color: (isPlayer
-                          ? const Color(0xFF08130A)
-                          : const Color(0xFF071106))
-                      .withValues(alpha: 0.88),
+                  color:
+                      (isPlayer
+                              ? const Color(0xFF08130A)
+                              : const Color(0xFF071106))
+                          .withValues(alpha: 0.88),
                   boxShadow: [
                     BoxShadow(
-                      color: (isPlayer
-                              ? const Color(0xFFB8FFD8)
-                              : const Color(0xFF7CFF41))
-                          .withValues(
-                        alpha: message.isCorrupted ? 0.18 : 0.08,
-                      ),
+                      color:
+                          (isPlayer
+                                  ? const Color(0xFFB8FFD8)
+                                  : const Color(0xFF7CFF41))
+                              .withValues(
+                                alpha: message.isCorrupted ? 0.18 : 0.08,
+                              ),
                       blurRadius: 16,
                     ),
                   ],
@@ -1124,8 +1157,8 @@ class _ChatBubble extends StatelessWidget {
                     color: isPlayer
                         ? const Color(0xFFD9FFE6)
                         : (message.isCorrupted
-                            ? const Color(0xFFA8FF87)
-                            : const Color(0xFFBFFF9A)),
+                              ? const Color(0xFFA8FF87)
+                              : const Color(0xFFBFFF9A)),
                     fontSize: compact ? 14 : 18,
                     letterSpacing: compact ? 0.4 : 1,
                     height: 1.25,
@@ -1257,10 +1290,7 @@ class _SquareTerminalButton extends StatelessWidget {
 }
 
 class _ChatSignalBars extends StatelessWidget {
-  const _ChatSignalBars({
-    required this.compact,
-    this.weak = false,
-  });
+  const _ChatSignalBars({required this.compact, this.weak = false});
 
   final bool compact;
   final bool weak;
@@ -1297,10 +1327,7 @@ class _ChatScanlines extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: CustomPaint(
-        painter: _ChatScanlinePainter(),
-        child: Container(),
-      ),
+      child: CustomPaint(painter: _ChatScanlinePainter(), child: Container()),
     );
   }
 }
@@ -1318,10 +1345,7 @@ class _ChatScanlinePainter extends CustomPainter {
 
     final vignette = Paint()
       ..shader = RadialGradient(
-        colors: [
-          Colors.transparent,
-          Colors.black.withValues(alpha: 0.78),
-        ],
+        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.78)],
         stops: const [0.5, 1],
       ).createShader(Offset.zero & size);
 
@@ -1335,9 +1359,7 @@ class _ChatScanlinePainter extends CustomPainter {
 BoxDecoration _chatPanelDecoration({double radius = 0}) {
   return BoxDecoration(
     borderRadius: BorderRadius.circular(radius),
-    border: Border.all(
-      color: const Color(0xFF7CFF41).withValues(alpha: 0.34),
-    ),
+    border: Border.all(color: const Color(0xFF7CFF41).withValues(alpha: 0.34)),
     boxShadow: [
       BoxShadow(
         color: const Color(0xFF7CFF41).withValues(alpha: 0.07),

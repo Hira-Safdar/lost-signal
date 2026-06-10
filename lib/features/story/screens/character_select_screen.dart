@@ -19,6 +19,8 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 900;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -27,96 +29,122 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen> {
           Image.asset('assets/images/corridor.png', fit: BoxFit.cover),
           Container(color: Colors.black.withValues(alpha: 0.84)),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Header(
-                    title: 'CHARACTER SELECT',
-                    subtitle: 'Choose who enters the campus tonight.',
-                    onBack: () => Navigator.of(context).pop(),
-                  ),
-                  const SizedBox(height: 18),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _AvatarCard(
-                                  label: 'NATHAN KIM',
-                                  role: 'Male Lead',
-                                  imagePath: 'assets/images/male_character.png',
-                                  selected: _selected == PlayerGender.male,
-                                  onTap: () => setState(() => _selected = PlayerGender.male),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1180),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _Header(
+                        title: 'CHARACTER SELECT',
+                        subtitle: 'Choose who enters the campus tonight.',
+                        onBack: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(height: 18),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Flex(
+                                direction: isWide
+                                    ? Axis.horizontal
+                                    : Axis.vertical,
+                                children: [
+                                  Expanded(
+                                    child: _AvatarCard(
+                                      label: 'NATHAN KIM',
+                                      role: 'Male Lead',
+                                      imagePath:
+                                          'assets/images/male_character.png',
+                                      selected: _selected == PlayerGender.male,
+                                      onTap: () => setState(
+                                        () => _selected = PlayerGender.male,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: isWide ? 12 : 0,
+                                    height: isWide ? 0 : 12,
+                                  ),
+                                  Expanded(
+                                    child: _AvatarCard(
+                                      label: 'SARA RAZA',
+                                      role: 'Female Lead',
+                                      imagePath:
+                                          'assets/images/female_character.png',
+                                      selected:
+                                          _selected == PlayerGender.female,
+                                      onTap: () => setState(
+                                        () => _selected = PlayerGender.female,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: _panelDecoration(),
+                              child: Text(
+                                '$_selectedName entered the hallway after midnight. The signal was already waiting.',
+                                style: const TextStyle(
+                                  color: Color(0xFFBFFF9A),
+                                  fontSize: 16,
+                                  height: 1.35,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      GestureDetector(
+                        onTap: () async {
+                          await GameScope.read(context).setCharacter(_selected);
+                          if (!context.mounted) {
+                            return;
+                          }
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) =>
+                                  ChapterIntroScreen(gender: _selected),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 16,
+                          ),
+                          decoration: _panelDecoration(glow: 0.14),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.play_arrow_rounded,
+                                color: Color(0xFF7CFF41),
+                                size: 28,
+                              ),
+                              SizedBox(width: 10),
                               Expanded(
-                                child: _AvatarCard(
-                                  label: 'SARA RAZA',
-                                  role: 'Female Lead',
-                                  imagePath: 'assets/images/female_character.png',
-                                  selected: _selected == PlayerGender.female,
-                                  onTap: () => setState(() => _selected = PlayerGender.female),
+                                child: Text(
+                                  'BEGIN CHAPTER 1',
+                                  style: TextStyle(
+                                    color: Color(0xFFEAFAEA),
+                                    fontSize: 17,
+                                    letterSpacing: 1.2,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 14),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: _panelDecoration(),
-                          child: Text(
-                            '$_selectedName entered the hallway after midnight. The signal was already waiting.',
-                            style: const TextStyle(
-                              color: Color(0xFFBFFF9A),
-                              fontSize: 16,
-                              height: 1.35,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  GestureDetector(
-                    onTap: () async {
-                      await GameScope.read(context).setCharacter(_selected);
-                      if (!context.mounted) {
-                        return;
-                      }
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ChapterIntroScreen(gender: _selected),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                      decoration: _panelDecoration(glow: 0.14),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.play_arrow_rounded, color: Color(0xFF7CFF41), size: 28),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'BEGIN CHAPTER 1',
-                              style: TextStyle(
-                                color: Color(0xFFEAFAEA),
-                                fontSize: 17,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -146,7 +174,10 @@ class _AvatarCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        decoration: _panelDecoration(glow: selected ? 0.26 : 0.06, selected: selected),
+        decoration: _panelDecoration(
+          glow: selected ? 0.26 : 0.06,
+          selected: selected,
+        ),
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -154,7 +185,10 @@ class _AvatarCard extends StatelessWidget {
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: _panelDecoration(glow: selected ? 0.18 : 0.04, selected: selected),
+                decoration: _panelDecoration(
+                  glow: selected ? 0.18 : 0.04,
+                  selected: selected,
+                ),
                 clipBehavior: Clip.hardEdge,
                 child: Stack(
                   fit: StackFit.expand,
@@ -185,7 +219,9 @@ class _AvatarCard extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: selected ? const Color(0xFFBFFF9A) : const Color(0xFFEAFAEA),
+                color: selected
+                    ? const Color(0xFFBFFF9A)
+                    : const Color(0xFFEAFAEA),
                 fontSize: 17,
                 letterSpacing: 1.3,
                 shadows: selected

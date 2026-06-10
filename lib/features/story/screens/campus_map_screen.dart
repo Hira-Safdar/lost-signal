@@ -71,7 +71,8 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
     StoryLocation(
       id: 'basement',
       title: 'BASEMENT ENTRANCE',
-      subtitle: 'The final route mentioned in Nathan\'s draft and report trail.',
+      subtitle:
+          'The final route mentioned in Nathan\'s draft and report trail.',
       clueIds: ['keycard'],
       imagePath: 'assets/images/basement.png',
       icon: Icons.stairs_outlined,
@@ -89,14 +90,9 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
   GameController? _game;
 
   int get _clueCount => _collectedClues.length;
-  bool get _chapterReadyForEnding =>
-      _completedLocations.containsAll(const <String>[
-        'engineering',
-        'admin',
-        'library',
-        'dormitory',
-        'basement',
-      ]);
+  bool get _chapterReadyForEnding => _completedLocations.containsAll(
+    const <String>['engineering', 'admin', 'library', 'dormitory', 'basement'],
+  );
 
   @override
   void initState() {
@@ -132,9 +128,11 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
       ..addAll(game.save.completedLocationIds);
     _unlockedLocations
       ..clear()
-      ..addAll(game.save.unlockedLocationIds.isEmpty
-          ? const <String>['engineering']
-          : game.save.unlockedLocationIds);
+      ..addAll(
+        game.save.unlockedLocationIds.isEmpty
+            ? const <String>['engineering']
+            : game.save.unlockedLocationIds,
+      );
   }
 
   Future<void> _startAmbient() async {
@@ -197,7 +195,9 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
       await _game?.updateLocationProgress(
         locationId: location.id,
         collectedClues: result.toList(growable: false),
-        completedLocationIds: progress.completedLocations.toList(growable: false),
+        completedLocationIds: progress.completedLocations.toList(
+          growable: false,
+        ),
         unlockedLocationIds: progress.unlockedLocations.toList(growable: false),
         objectiveId: progress.objectiveId,
         storyPhase: progress.storyPhase,
@@ -206,7 +206,8 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
   }
 
   Future<void> _openEnding() async {
-    final endingId = (widget.signalStrength >= 55 &&
+    final endingId =
+        (widget.signalStrength >= 55 &&
             widget.trustScore >= 55 &&
             _chapterReadyForEnding)
         ? 'signal_held'
@@ -233,8 +234,8 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
   @override
   Widget build(BuildContext context) {
     final game = GameScope.of(context);
-    final effectiveSignal =
-        (widget.signalStrength - (5 - _clueCount) * 4).clamp(24, 99);
+    final effectiveSignal = (widget.signalStrength - (5 - _clueCount) * 4)
+        .clamp(24, 99);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -244,165 +245,184 @@ class _CampusMapScreenState extends State<CampusMapScreen> {
           Image.asset('assets/images/campus_map.png', fit: BoxFit.cover),
           Container(color: Colors.black.withValues(alpha: 0.12)),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: _panelDecoration(),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: _panelDecoration(),
-                            child: const Icon(
-                              Icons.arrow_back_ios_new,
-                              color: Color(0xFF7CFF41),
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'CAMPUS MAP',
-                                style: TextStyle(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1280),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: _panelDecoration(),
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: _panelDecoration(),
+                                child: const Icon(
+                                  Icons.arrow_back_ios_new,
                                   color: Color(0xFF7CFF41),
-                                  fontSize: 17,
-                                  letterSpacing: 1.2,
+                                  size: 18,
                                 ),
                               ),
-                              SizedBox(height: 2),
-                              Text(
-                                'Tap a marked building to roam and collect clues.',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          'Signal $effectiveSignal%',
-                          style: const TextStyle(
-                            color: Color(0xFF7CFF41),
-                            fontSize: 11,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Container(
-                            decoration: _panelDecoration(glow: 0.04),
-                          ),
-                        ),
-                        ..._locations.map((location) {
-                          final found =
-                              location.clueIds.where(_collectedClues.contains).length;
-                          return Align(
-                            alignment: location.markerAlignment,
-                            child: _MapMarker(
-                              location: location,
-                              found: found,
-                              unlocked: _unlockedLocations.contains(location.id),
-                              completed: _completedLocations.contains(location.id),
-                              onTap: () => _openLocation(location),
                             ),
-                          );
-                        }),
-                        Positioned(
-                          left: 10,
-                          right: 10,
-                          bottom: 10,
-                          child: Row(
-                            children: [
-                              Expanded(
+                            const SizedBox(width: 10),
+                            const Expanded(
                               child: Column(
-                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: _panelDecoration(),
-                                      child: Text(
-                                        game.nextObjectiveLabel(),
-                                        style: const TextStyle(
-                                          color: Color(0xFFBFFF9A),
-                                          fontSize: 12,
-                                          height: 1.3,
+                                  Text(
+                                    'CAMPUS MAP',
+                                    style: TextStyle(
+                                      color: Color(0xFF7CFF41),
+                                      fontSize: 17,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Tap a marked building to roam and collect clues.',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              'Signal $effectiveSignal%',
+                              style: const TextStyle(
+                                color: Color(0xFF7CFF41),
+                                fontSize: 11,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Container(
+                                decoration: _panelDecoration(glow: 0.04),
+                              ),
+                            ),
+                            ..._locations.map((location) {
+                              final found = location.clueIds
+                                  .where(_collectedClues.contains)
+                                  .length;
+                              return Align(
+                                alignment: location.markerAlignment,
+                                child: _MapMarker(
+                                  location: location,
+                                  found: found,
+                                  unlocked: _unlockedLocations.contains(
+                                    location.id,
+                                  ),
+                                  completed: _completedLocations.contains(
+                                    location.id,
+                                  ),
+                                  onTap: () => _openLocation(location),
+                                ),
+                              );
+                            }),
+                            Positioned(
+                              left: 10,
+                              right: 10,
+                              bottom: 10,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: _panelDecoration(),
+                                          child: Text(
+                                            game.nextObjectiveLabel(),
+                                            style: const TextStyle(
+                                              color: Color(0xFFBFFF9A),
+                                              fontSize: 12,
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        _InventoryPanel(
+                                          collectedClues: _collectedClues,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await game.openCaseFile();
+                                      if (!context.mounted) {
+                                        return;
+                                      }
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) =>
+                                              const CaseFileScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 14,
+                                      ),
+                                      decoration: _panelDecoration(glow: 0.10),
+                                      child: const Icon(
+                                        Icons.folder_open_rounded,
+                                        color: Color(0xFF7CFF41),
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  GestureDetector(
+                                    onTap: _chapterReadyForEnding
+                                        ? _openEnding
+                                        : null,
+                                    child: Opacity(
+                                      opacity: _chapterReadyForEnding
+                                          ? 1
+                                          : 0.45,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 14,
+                                        ),
+                                        decoration: _panelDecoration(
+                                          glow: 0.14,
+                                        ),
+                                        child: const Icon(
+                                          Icons.play_arrow_rounded,
+                                          color: Color(0xFF7CFF41),
+                                          size: 28,
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    _InventoryPanel(collectedClues: _collectedClues),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () async {
-                                  await game.openCaseFile();
-                                  if (!context.mounted) {
-                                    return;
-                                  }
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => const CaseFileScreen(),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 14,
                                   ),
-                                  decoration: _panelDecoration(glow: 0.10),
-                                  child: const Icon(
-                                    Icons.folder_open_rounded,
-                                    color: Color(0xFF7CFF41),
-                                    size: 24,
-                                  ),
-                                ),
+                                ],
                               ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: _chapterReadyForEnding ? _openEnding : null,
-                                child: Opacity(
-                                  opacity: _chapterReadyForEnding ? 1 : 0.45,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 14,
-                                    ),
-                                    decoration: _panelDecoration(glow: 0.14),
-                                    child: const Icon(
-                                      Icons.play_arrow_rounded,
-                                      color: Color(0xFF7CFF41),
-                                      size: 28,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -565,25 +585,29 @@ class _MapMarkerState extends State<_MapMarker>
                   widget.completed
                       ? Icons.verified_rounded
                       : (widget.unlocked
-                          ? Icons.location_on_rounded
-                          : Icons.lock_outline_rounded),
+                            ? Icons.location_on_rounded
+                            : Icons.lock_outline_rounded),
                   color: widget.unlocked
                       ? widget.location.markerColor
                       : Colors.white54,
                   size: 32,
                   shadows: [
                     Shadow(
-                      color: (widget.unlocked
-                              ? widget.location.markerColor
-                              : Colors.white54)
-                          .withValues(alpha: 0.55),
+                      color:
+                          (widget.unlocked
+                                  ? widget.location.markerColor
+                                  : Colors.white54)
+                              .withValues(alpha: 0.55),
                       blurRadius: 18,
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: _panelDecoration(glow: glow),
                 child: Column(
                   children: [
@@ -602,8 +626,8 @@ class _MapMarkerState extends State<_MapMarker>
                         widget.completed
                             ? 'COMPLETE'
                             : (widget.unlocked
-                                ? '${widget.found} / ${widget.location.clueIds.length} clues'
-                                : 'LOCKED'),
+                                  ? '${widget.found} / ${widget.location.clueIds.length} clues'
+                                  : 'LOCKED'),
                         style: const TextStyle(
                           color: Color(0xFF7CFF41),
                           fontSize: 10,
@@ -684,9 +708,7 @@ class _InventoryPanel extends StatelessWidget {
 
 BoxDecoration _panelDecoration({double glow = 0.08}) {
   return BoxDecoration(
-    border: Border.all(
-      color: const Color(0xFF7CFF41).withValues(alpha: 0.34),
-    ),
+    border: Border.all(color: const Color(0xFF7CFF41).withValues(alpha: 0.34)),
     boxShadow: [
       BoxShadow(
         color: const Color(0xFF7CFF41).withValues(alpha: glow),
