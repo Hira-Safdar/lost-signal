@@ -17,6 +17,14 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  static const Map<String, String> _locationBackgrounds = {
+    'dormitory': 'assets/images/dormitory.png',
+    'engineering': 'assets/images/engineering_block.png',
+    'admin': 'assets/images/admin.png',
+    'library': 'assets/images/library.png',
+    'basement': 'assets/images/basement.png',
+  };
+
   static const List<ChatMessage> _seedMessages = [
     ChatMessage(
       sender: MessageSender.unknownStudent,
@@ -30,7 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
     ),
     ChatMessage(
       sender: MessageSender.unknownStudent,
-      text: 'I left the dormitory after someone called me to Room 207. Something followed me from the stairwell.',
+      text: 'I left the dormitory after someone texted me to come downstairs. Something started following me near the stairwell.',
       timestamp: '2:14 AM',
     ),
     ChatMessage(
@@ -41,7 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
     ),
     ChatMessage(
       sender: MessageSender.unknownStudent,
-      text: 'I can hear it... right now. If I lose signal, check engineering first.',
+      text: 'I can hear it... right now. If I lose signal, start at Engineering Block and follow the trail.',
       timestamp: '2:16 AM',
       isCorrupted: true,
     ),
@@ -56,9 +64,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Where are you?',
           signalDelta: -6,
           nextNodeId: 'location',
+          locationId: 'admin',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Engineering Block. Room 207 is dark, but the notice board outside still has my face on it.',
+            text: 'I was in Engineering Block a minute ago. Now I am cutting through the admin corridor toward the library stairs.',
             timestamp: '2:16 AM',
           ),
         ),
@@ -66,6 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Who is this?',
           signalDelta: -14,
           nextNodeId: 'identity',
+          locationId: 'admin',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
             text: 'Nathan. Nathan Kim. If that name means nothing, look at the report in admin.',
@@ -77,9 +87,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'What is following you?',
           signalDelta: -9,
           nextNodeId: 'threat',
+          locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I never saw it clearly. It sounds like shoes dragging and keys hitting metal behind me.',
+            text: 'I never saw it clearly. It sounds like shoes dragging behind me, then metal keys every time I reach a locked door.',
             timestamp: '2:17 AM',
           ),
         ),
@@ -93,9 +104,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Stay where you are.',
           signalDelta: -7,
           nextNodeId: 'ending_stay',
+          locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'I tried. It gets closer whenever I stop near the engineering desk. My ID is still there.',
+            text: 'I tried. It gets closer whenever I stop. I left my ID in Engineering and the report is still near the admin office.',
             timestamp: '2:18 AM',
           ),
         ),
@@ -103,9 +115,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Hide somewhere.',
           signalDelta: -18,
           nextNodeId: 'ending_hide',
+          locationId: 'library',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'There is a locked lab here. Door says 207. I can hear the same static from inside that came through my phone.',
+            text: 'I found a dark archive room off the library stairs. I can hear the same static inside that came through my phone.',
             timestamp: '2:18 AM',
             isCorrupted: true,
           ),
@@ -114,9 +127,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'I am coming.',
           signalDelta: -12,
           nextNodeId: 'ending_come',
+          locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Then bring proof. My student card, the report, and anything that opens the basement door.',
+            text: 'Then bring proof. My student card is in Engineering, the report is near Admin, and something below campus is waiting.',
             timestamp: '2:18 AM',
           ),
         ),
@@ -130,6 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Why do I know you?',
           signalDelta: -8,
           nextNodeId: 'ending_memory',
+          locationId: 'admin',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
             text: 'Because you saw my report this morning and kept walking. You were the only one who stopped reading it.',
@@ -141,6 +156,7 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'You have the wrong number.',
           signalDelta: -20,
           nextNodeId: 'ending_wrong',
+          locationId: 'library',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
             text: 'No. This phone unlocked when it saw your number in my broken contacts draft.',
@@ -152,9 +168,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Tell me your name.',
           signalDelta: -10,
           nextNodeId: 'ending_name',
+          locationId: 'engineering',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'Nathan Kim. If the text glitches again, check my ID. It has to still be upstairs.',
+            text: 'Nathan Kim. If the text glitches again, check my ID upstairs, then the broken phone in the library.',
             timestamp: '2:19 AM',
           ),
         ),
@@ -168,9 +185,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Keep moving.',
           signalDelta: -6,
           nextNodeId: 'ending_move',
+          locationId: 'basement',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'It hates movement. I think it wants me cornered until someone opens the basement route for it.',
+            text: 'It hates movement. I think it wants me cornered before I reach the basement access door.',
             timestamp: '2:18 AM',
           ),
         ),
@@ -178,6 +196,7 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Turn around and look.',
           signalDelta: -22,
           nextNodeId: 'ending_look',
+          locationId: 'library',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
             text: 'I did once. It was standing where my missing poster should have been.',
@@ -189,9 +208,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: 'Lock the nearest door.',
           signalDelta: -11,
           nextNodeId: 'ending_lock',
+          locationId: 'admin',
           response: ChatMessage(
             sender: MessageSender.unknownStudent,
-            text: 'The doors lock from the outside only. Someone used a campus security card and planned this.',
+            text: 'The doors lock from the outside only. Someone used a campus security card and herded me from one block to the next.',
             timestamp: '2:18 AM',
           ),
         ),
@@ -201,7 +221,7 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_stay',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'Signal weakening. Footsteps detected outside Room 207. Engineering desk ping preserved.',
+        text: 'Signal weakening. Last pings detected across Engineering, Admin corridor, and the library stairwell.',
         timestamp: '2:19 AM',
         isCorrupted: true,
       ),
@@ -210,7 +230,7 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_hide',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'Connection unstable. Door 207 opened from inside. Archive route to admin recommended.',
+        text: 'Connection unstable. Library archive door opened. Route from Admin to basement recommended.',
         timestamp: '2:19 AM',
         isCorrupted: true,
       ),
@@ -227,7 +247,7 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_memory',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'Archive fragment restored. Missing-student file linked to Room 207 and a basement maintenance route.',
+        text: 'Archive fragment restored. Missing-student file linked to Engineering, the Admin corridor, and a basement maintenance route.',
         timestamp: '2:19 AM',
       ),
     ),
@@ -252,7 +272,7 @@ class _ChatScreenState extends State<ChatScreen> {
       id: 'ending_move',
       finalMessage: ChatMessage(
         sender: MessageSender.system,
-        text: 'Motion preserved the link. Contact still mobile near the route below Engineering Block.',
+        text: 'Motion preserved the link. Contact still mobile between the library stairs and the basement route.',
         timestamp: '2:19 AM',
       ),
     ),
@@ -275,21 +295,75 @@ class _ChatScreenState extends State<ChatScreen> {
     ),
   };
 
-  final List<ChatMessage> _messages = List<ChatMessage>.from(_seedMessages);
+  final List<ChatMessage> _messages = <ChatMessage>[];
   final ScrollController _scrollController = ScrollController();
 
   String _currentNodeId = 'entry';
+  String _currentLocationId = 'dormitory';
   int _signalStrength = 87;
   int _trustScore = 58;
   bool _isTyping = false;
-  bool _isLocked = false;
+  bool _isLocked = true;
   Timer? _replyTimer;
+  Timer? _introTimer;
+  int _introIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startIntroSequence();
+  }
 
   @override
   void dispose() {
     _replyTimer?.cancel();
+    _introTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _startIntroSequence() {
+    _queueNextIntroMessage(initial: true);
+  }
+
+  void _queueNextIntroMessage({bool initial = false}) {
+    if (_introIndex >= _seedMessages.length) {
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _isLocked = false;
+        });
+      }
+      return;
+    }
+
+    final delay = initial ? const Duration(milliseconds: 600) : const Duration(milliseconds: 1400);
+    setState(() {
+      _isTyping = true;
+      _isLocked = true;
+    });
+
+    _introTimer?.cancel();
+    _introTimer = Timer(delay, () {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _messages.add(_seedMessages[_introIndex]);
+        _introIndex += 1;
+        _isTyping = false;
+      });
+      _scrollToBottom();
+
+      if (_introIndex < _seedMessages.length) {
+        _queueNextIntroMessage();
+      } else {
+        setState(() {
+          _isLocked = false;
+        });
+      }
+    });
   }
 
   void _handleChoiceTap(int index) {
@@ -342,6 +416,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(selectedChoice.response);
         _isTyping = false;
         _currentNodeId = selectedChoice.nextNodeId;
+        _currentLocationId = selectedChoice.locationId;
         final nextNode = _currentNode;
         if (nextNode is _EndingNode) {
           _messages.add(nextNode.finalMessage);
@@ -369,7 +444,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   String get _playerTimestamp {
-    final minute = 16 + ((_messages.length - _seedMessages.length) ~/ 2);
+    final minute = 16 + ((_messages.length - _seedMessages.length).clamp(0, 999) ~/ 2);
     return '2:${minute.toString().padLeft(2, '0')} AM';
   }
 
@@ -387,9 +462,13 @@ class _ChatScreenState extends State<ChatScreen> {
           body: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(
-                'assets/images/corridor.png',
-                fit: BoxFit.cover,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                child: Image.asset(
+                  _backgroundImagePath,
+                  key: ValueKey(_backgroundImagePath),
+                  fit: BoxFit.cover,
+                ),
               ),
               Container(color: Colors.black.withValues(alpha: 0.86)),
               Opacity(
@@ -399,9 +478,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     const Color(0xFF7CFF41).withValues(alpha: 0.28),
                     BlendMode.screen,
                   ),
-                  child: Image.asset(
-                    'assets/images/corridor.png',
-                    fit: BoxFit.cover,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    child: Image.asset(
+                      _backgroundImagePath,
+                      key: ValueKey('tint-$_backgroundImagePath'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
@@ -452,10 +535,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         alignment: Alignment.centerRight,
                                         child: Opacity(
                                           opacity: isCompact ? 0.05 : 0.09,
-                                          child: Image.asset(
-                                            'assets/images/corridor.png',
-                                            fit: BoxFit.cover,
-                                          ),
+                                          child: Image.asset(_backgroundImagePath, fit: BoxFit.cover),
                                         ),
                                       ),
                                     ),
@@ -705,6 +785,9 @@ class _ChatScreenState extends State<ChatScreen> {
         .map((choice) => choice.text)
         .toList(growable: false);
   }
+
+  String get _backgroundImagePath =>
+      _locationBackgrounds[_currentLocationId] ?? 'assets/images/corridor.png';
 }
 
 abstract class _StoryNodeBase {
@@ -738,12 +821,14 @@ class _StoryChoice {
     required this.text,
     required this.signalDelta,
     required this.nextNodeId,
+    required this.locationId,
     required this.response,
   });
 
   final String text;
   final int signalDelta;
   final String nextNodeId;
+  final String locationId;
   final ChatMessage response;
 }
 

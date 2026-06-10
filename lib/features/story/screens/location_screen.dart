@@ -64,6 +64,7 @@ class _LocationScreenState extends State<LocationScreen> {
         id: 'desk_papers',
         label: 'Drag desk papers',
         alignment: Alignment(0.74, 0.86),
+        revealAlignment: Alignment(0.34, -0.04),
         size: Size(126, 60),
         direction: Axis.horizontal,
         clueId: 'badge',
@@ -72,6 +73,7 @@ class _LocationScreenState extends State<LocationScreen> {
         id: 'notice_board',
         label: 'Slide board notices',
         alignment: Alignment(0.18, 0.08),
+        revealAlignment: Alignment(-0.08, -0.18),
         size: Size(90, 74),
         direction: Axis.vertical,
         clueId: 'notice',
@@ -82,6 +84,7 @@ class _LocationScreenState extends State<LocationScreen> {
         id: 'reading_notes',
         label: 'Move desk journal',
         alignment: Alignment(0.78, 0.92),
+        revealAlignment: Alignment(0.26, -0.08),
         size: Size(120, 66),
         direction: Axis.horizontal,
         clueId: 'logbook',
@@ -90,6 +93,7 @@ class _LocationScreenState extends State<LocationScreen> {
         id: 'poster_stack',
         label: 'Pull poster corner',
         alignment: Alignment(0.88, -0.08),
+        revealAlignment: Alignment(0.44, -0.26),
         size: Size(82, 92),
         direction: Axis.vertical,
         clueId: 'photo',
@@ -271,154 +275,156 @@ class _LocationScreenState extends State<LocationScreen> {
                   ),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: Stack(
+                    child: Column(
                       children: [
-                        Positioned.fill(
-                          child: Container(decoration: _panelDecoration(glow: 0.04)),
-                        ),
-                        ...items.map((item) {
-                          final revealed = _isItemMoved(item);
-                          final found = _clues.contains(item.clueId);
-                          final clueImage = _clueImages[item.clueId]!;
-                          return Stack(
+                        Expanded(
+                          child: Stack(
                             children: [
-                              Align(
-                                alignment: item.alignment,
-                                child: GestureDetector(
-                                  onTap: revealed && !found
-                                      ? () => _collectClue(item.clueId)
-                                      : null,
-                                  child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 180),
-                                    opacity: revealed && !found ? 1 : (found ? 0.22 : 0.0),
-                                    child: Container(
-                                      width: item.size.width * 0.72,
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: _panelDecoration(glow: 0.16),
-                                      child: Image.asset(clueImage, fit: BoxFit.contain),
-                                    ),
-                                  ),
-                                ),
+                              Positioned.fill(
+                                child: Container(decoration: _panelDecoration(glow: 0.04)),
                               ),
-                              Align(
-                                alignment: item.alignment,
-                                child: Transform.translate(
-                                  offset: _searchOffsets[item.id] ?? Offset.zero,
-                                  child: GestureDetector(
-                                    onPanUpdate: (details) {
-                                      final current = _searchOffsets[item.id] ?? Offset.zero;
-                                      final next = item.direction == Axis.horizontal
-                                          ? Offset((current.dx + details.delta.dx).clamp(-70, 70), 0)
-                                          : Offset(0, (current.dy + details.delta.dy).clamp(-60, 60));
-                                      setState(() {
-                                        _searchOffsets[item.id] = next;
-                                      });
-                                    },
-                                    onPanEnd: (_) => _playEffect('sounds/footstep.mp3', 0.12),
-                                    child: AnimatedOpacity(
-                                      duration: const Duration(milliseconds: 180),
-                                      opacity: found ? 0.28 : 0.94,
-                                      child: Container(
-                                        width: item.size.width,
-                                        height: item.size.height,
-                                        decoration: _panelDecoration(glow: 0.10),
-                                        padding: const EdgeInsets.all(10),
-                                        child: Center(
-                                          child: Text(
-                                            item.label,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              color: Color(0xFFEAFAEA),
-                                              fontSize: 11,
-                                              letterSpacing: 0.8,
+                              ...items.map((item) {
+                                final revealed = _isItemMoved(item);
+                                final found = _clues.contains(item.clueId);
+                                final clueImage = _clueImages[item.clueId]!;
+                                return Stack(
+                                  children: [
+                                    Align(
+                                      alignment: item.revealAlignment ?? item.alignment,
+                                      child: GestureDetector(
+                                        onTap: revealed && !found
+                                            ? () => _collectClue(item.clueId)
+                                            : null,
+                                        child: AnimatedOpacity(
+                                          duration: const Duration(milliseconds: 180),
+                                          opacity: revealed && !found ? 1 : (found ? 0.22 : 0.0),
+                                          child: Container(
+                                            width: item.size.width * 0.72,
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: _panelDecoration(glow: 0.16),
+                                            child: Image.asset(clueImage, fit: BoxFit.contain),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: item.alignment,
+                                      child: Transform.translate(
+                                        offset: _searchOffsets[item.id] ?? Offset.zero,
+                                        child: GestureDetector(
+                                          onPanUpdate: (details) {
+                                            final current = _searchOffsets[item.id] ?? Offset.zero;
+                                            final next = item.direction == Axis.horizontal
+                                                ? Offset((current.dx + details.delta.dx).clamp(-70, 70), 0)
+                                                : Offset(0, (current.dy + details.delta.dy).clamp(-60, 60));
+                                            setState(() {
+                                              _searchOffsets[item.id] = next;
+                                            });
+                                          },
+                                          onPanEnd: (_) => _playEffect('sounds/footstep.mp3', 0.12),
+                                          child: AnimatedOpacity(
+                                            duration: const Duration(milliseconds: 180),
+                                            opacity: found ? 0.28 : 0.94,
+                                            child: Container(
+                                              width: item.size.width,
+                                              height: item.size.height,
+                                              decoration: _panelDecoration(glow: 0.10),
+                                              padding: const EdgeInsets.all(10),
+                                              child: Center(
+                                                child: Text(
+                                                  item.label,
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    color: Color(0xFFEAFAEA),
+                                                    fontSize: 11,
+                                                    letterSpacing: 0.8,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
+                                  ],
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: _panelDecoration(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${widget.gender.subject == 'He' ? 'Nathan' : 'Sara'} is reconstructing Nathan Kim\'s path through ${widget.location.title.toLowerCase()}.',
+                                style: const TextStyle(
+                                  color: Color(0xFFEAFAEA),
+                                  fontSize: 14,
+                                  height: 1.3,
                                 ),
                               ),
-                            ],
-                          );
-                        }),
-                        Positioned(
-                          left: 10,
-                          right: 10,
-                          bottom: 10,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: _panelDecoration(),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${widget.gender.subject == 'He' ? 'Nathan' : 'Sara'} is reconstructing Nathan Kim\'s path through ${widget.location.title.toLowerCase()}.',
-                                  style: const TextStyle(
-                                    color: Color(0xFFEAFAEA),
-                                    fontSize: 14,
-                                    height: 1.3,
+                              const SizedBox(height: 8),
+                              ...widget.location.clueIds.map((clueId) {
+                                final found = _clues.contains(clueId);
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        found ? Icons.check_circle : Icons.radio_button_unchecked,
+                                        color: const Color(0xFF7CFF41),
+                                        size: 15,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _clueLabels[clueId]!,
+                                          style: TextStyle(
+                                            color: found ? const Color(0xFFBFFF9A) : Colors.white70,
+                                            fontSize: 12,
+                                            height: 1.25,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                              if (_lastFoundClueId != null) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: _panelDecoration(glow: 0.12),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'LATEST FIND',
+                                        style: TextStyle(
+                                          color: Color(0xFF7CFF41),
+                                          fontSize: 11,
+                                          letterSpacing: 1.0,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        _clueDetails[_lastFoundClueId]!,
+                                        style: const TextStyle(
+                                          color: Color(0xFFEAFAEA),
+                                          fontSize: 12,
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                ...widget.location.clueIds.map((clueId) {
-                                  final found = _clues.contains(clueId);
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 6),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          found ? Icons.check_circle : Icons.radio_button_unchecked,
-                                          color: const Color(0xFF7CFF41),
-                                          size: 15,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            _clueLabels[clueId]!,
-                                            style: TextStyle(
-                                              color: found ? const Color(0xFFBFFF9A) : Colors.white70,
-                                              fontSize: 12,
-                                              height: 1.25,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                                if (_lastFoundClueId != null) ...[
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: _panelDecoration(glow: 0.12),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'LATEST FIND',
-                                          style: TextStyle(
-                                            color: Color(0xFF7CFF41),
-                                            fontSize: 11,
-                                            letterSpacing: 1.0,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          _clueDetails[_lastFoundClueId]!,
-                                          style: const TextStyle(
-                                            color: Color(0xFFEAFAEA),
-                                            fontSize: 12,
-                                            height: 1.35,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
                               ],
-                            ),
+                            ],
                           ),
                         ),
                       ],
@@ -465,6 +471,7 @@ class _LocationScreenState extends State<LocationScreen> {
       ),
     );
   }
+
 }
 
 class _SceneItem {
@@ -472,6 +479,7 @@ class _SceneItem {
     required this.id,
     required this.label,
     required this.alignment,
+    this.revealAlignment,
     required this.size,
     required this.direction,
     required this.clueId,
@@ -480,6 +488,7 @@ class _SceneItem {
   final String id;
   final String label;
   final Alignment alignment;
+  final Alignment? revealAlignment;
   final Size size;
   final Axis direction;
   final String clueId;
